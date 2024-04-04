@@ -1,5 +1,5 @@
 /*--------------------------
-Smart Car Code
+Copy and paste to Arduino IDE to run
   By: Sebastian, Jon, Carlos 
   Written: 03 April, 2024
   I/O Pins
