@@ -26,7 +26,7 @@
   D13:
 */
 
-volatile unsigned int sensorArr[3];
+volatile unsigned int 
 volatile unsigned long count = 0;
 volatile unsigned long capt[2];
 
@@ -55,6 +55,7 @@ void setup() {
   ADCSRA = 0XEF;
   ADCSRB = 0X00;
   ADMUX = 0X64;
+
   // trigger pin set as an output pin
   DDRD = 0X04;                                                  // end of ultrasonic configurations
 
@@ -69,24 +70,22 @@ void setup() {
 void loop() {
 
   // declare variables for the periods
-  unsigned long ticksBetween[3] = {0};
-  static unsigned long tHigh[3] = {0};
+  unsigned long ticksBetween = 0;
+  static unsigned long tHigh = 0;
 
   // send a 10 us delay to the echo pin
   PORTD ^= 0X04;
   _delay_us(10);
   PORTD ^= 0X04;
 
-
-
   cli();
   if (capt[1] > capt[0])
-    ticksBetween[0] = capt[1] - capt[0];
+    ticksBetween = capt[1] - capt[0];
+  else (capt[0] > capt[1])
+    ticksBetween = capt[0] - capt[1];
   sei();
-
-
-
-  _delay_ms(120);         // reduce flickering
+  unsigned int distance = ticksBetween
+                          _delay_ms(120);         // reduce flickering
 }
 
 
@@ -105,25 +104,21 @@ ISR(TIMER1_CAPT_vect)
   x ^= 1;                                   // toggling x to change the condition of the statement
 }
 
-ISR(TIMER1_OVF_vect)          // counts the
+ISR(TIMER1_OVF_vect)          // keeps running total of the ticks elasped even after overflow 
 {
   count += 65536;
+
+  PORTC ^= 0X10;          // toggles pin A4
+  a = ;
+  PORTC ^= 0X20;          // toggles pin A5
+  b = ;
+  PORTC ^= 0X30;          // toggles pin A4 and A5
+  c = ;
 }
 
 ISR(ADC_vect)
 {
 
-}
-
-ISR(TIMER0_COMPA_vect)
-{
-  _delay_us(10);
-  PORTD ^= 0X80;
-}
-
-ISR(TIMER2_COMPA_vect)
-{
-  PORTB ^= 0x02;
 }
 
 
