@@ -31,10 +31,7 @@ volatile unsigned long capt[2];
 
 void setup() {
 
-  // clears the interrupt enable on SREG
-  cli();
-
-    // output pin for the PWM signals of motor control and trigger pin
+  // output pin for the PWM signals of motor control and trigger pin
   DDRD = 0xFC;
 
   // output pin for the PWM signals of motor control
@@ -45,8 +42,9 @@ void setup() {
 
   // enables the motor control
   PORTD |= 0x90;
+  // clears the interrupt enable on SREG
+  cli();
 
-  
   TCCR0A = 0xA1;  // Using phase-correct PWM, clear on A, clear on B
   TCCR0B = 0x01;  // with prescale value of 1
 
@@ -80,14 +78,14 @@ void setup() {
 
 void loop() {
 
+  // send a 10 us pulse  from the trigger pin A3
+  PORTD |= 0x04;
+  _delay_us(10);
+  PORTD &= 0xFB;
+
   // declare variables for the periods
   unsigned long ticksBetween = 0;
   static unsigned long tHigh = 0;
-
-  // send a 10 us pulse  from the trigger pin A3
-  PORTD ^= 0x04;
-  _delay_us(10);
-  PORTD ^= 0x04;
 
   cli();
   if (capt[1] > capt[0]) {                    // calculates the period high and stores it in tHigh
@@ -100,7 +98,7 @@ void loop() {
   }
   sei();
 
-  unsigned long distance = (tHigh * 17182L) / 10000;      // gets the whole number of distance
+  unsigned int distance = (tHigh * 17182L) / 10000;      // gets the whole number of distance
 
   speedControl(distance);
   
@@ -149,7 +147,8 @@ ISR(TIMER1_OVF_vect)          // keeps running total of the ticks elasped even a
   count += 65536;
 }
 
-/* ISR(TIMER0_COMPA_vect)
+/*
+ISR(TIMER0_COMPA_vect)
 {
 
 }
