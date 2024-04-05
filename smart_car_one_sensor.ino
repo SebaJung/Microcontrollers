@@ -66,8 +66,11 @@ void setup() {
 
   // sets the interrupt enable on SREG
   sei();
+  // start the 
   OCR0B = 255;
+  OCR0A = 0;
   OCR2B = 255;
+  OCR2A = 0;
 
   Serial.begin(9600);
 }
