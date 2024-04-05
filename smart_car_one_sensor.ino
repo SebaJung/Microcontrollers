@@ -31,7 +31,6 @@ volatile unsigned long capt[2];
 
 void setup() {
 
-
   // clears the interrupt enable on SREG
   cli();
 
