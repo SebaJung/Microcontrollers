@@ -38,7 +38,7 @@ void setup() {
   DDRB = 0x08;
 
   // output pin for the trigger pin of ultrasonic sensor
-  DDRC = 0x08;
+  // DDRC = 0x08;
 
   // enables the motor control
   PORTD |= 0x90;
@@ -100,8 +100,12 @@ void loop() {
 
   unsigned int distance = (tHigh * 17182L) / 10000;      // gets the whole number of distance
   Serial.println(distance);
-  cli();
-  if (distance > 25) {        // if greater than 25 cm, full speed
+
+  _delay_ms(120);         // reduce flickering
+}
+
+void speedControl(unsigned int distance) {
+   if (distance > 25) {        // if greater than 25 cm, full speed
     OCR0B = 255;
     OCR2B = 255;
   } else if (distance > 15) {    // if greater than 15 but less than 25, half speed
@@ -117,10 +121,8 @@ void loop() {
     OCR0A = 0;
     OCR2A = 125;
   }
-sei();
-  _delay_ms(120);         // reduce flickering
-}
 
+}
 
 ISR(TIMER1_CAPT_vect)
 {
