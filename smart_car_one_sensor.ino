@@ -146,15 +146,3 @@ ISR(TIMER0_COMPA_vect)
 
 }
 
-ISR(INT0_vect)
-{
-  OCR0B = 255;
-  OCR2B = 255;
-  OCR0A = 0;
-  OCR2A = 0;
-  _delay_us(100);
-  OCR0B = 255;
-  OCR2B = 255;
-  OCR0A = 0;
-  OCR2A = 0;
-}
