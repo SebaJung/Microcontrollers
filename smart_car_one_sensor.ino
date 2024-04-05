@@ -7,12 +7,12 @@
   A0: Left Line Sensor
   A1: Center Line Sensor
   A2: Right Line Sensor
-  A3: TRIGGER PIN
-  A4:
-  A5:
+  A3: 
+  A4: Right whisker
+  A5: Left whisker
   D0:
   D1:
-  D2: 
+  D2: TRIGGER PIN
   D3: Right Forward PWM - OCR2B
   D4: Left Motor Control
   D5: Left Forward PWM - OC0B
