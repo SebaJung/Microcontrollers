@@ -31,6 +31,9 @@ volatile unsigned long capt[2];
 
 void setup() {
 
+  // clears the interrupt enable on SREG
+  cli();
+
   // output pin for the PWM signals of motor control and trigger pin
   DDRD = 0xFC;
 
@@ -42,9 +45,7 @@ void setup() {
 
   // enables the motor control
   PORTD |= 0x90;
-  // clears the interrupt enable on SREG
-  cli();
-
+  
   TCCR0A = 0xA1;  // Using phase-correct PWM, clear on A, clear on B
   TCCR0B = 0x01;  // with prescale value of 1
 
