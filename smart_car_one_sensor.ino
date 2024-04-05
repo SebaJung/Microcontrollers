@@ -83,9 +83,9 @@ void loop() {
   static unsigned long tHigh = 0;
 
   // send a 10 us pulse  from the trigger pin A3
-  PORTC ^= 0x08;
+  PORTD ^= 0x04;
   _delay_us(10);
-  PORTC ^= 0x08;
+  PORTD ^= 0x04;
 
   cli();
   if (capt[1] > capt[0]) {                    // calculates the period high and stores it in tHigh
