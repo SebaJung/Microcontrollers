@@ -62,15 +62,13 @@ void setup() {
   ADCSRB = 0x00;          // configure using AVCC, pin 4, ADLAR = 1
   ADMUX = 0x64;           // w/ ADIF bit OFF
 
-  EICRA = 0x02;           // call interrupt on rising edge
-  EIMSK = 0x01;           // trigger on pin D2
-
   // sets the interrupt enable on SREG
   sei();
+  
   // start the motors by triggering the forward PWM
-  OCR0B = 255;
+  OCR0B = 250;
   OCR0A = 0;
-  OCR2B = 255;
+  OCR2B = 250;
   OCR2A = 0;
 
   Serial.begin(9600);
@@ -110,14 +108,20 @@ void loop() {
 
 void speedControl(unsigned int distance) {
   if (distance > 25) {        // if greater than 25 cm, full speed
-    OCR0B = 255;
-    OCR2B = 255;
+    OCR0B = 250;
+    OCR0A = 0;
+    OCR2B = 250;
+    OCR2A = 0;
   } else if (distance > 15) {    // if greater than 15 but less than 25, half speed
     OCR0B = 125;
+    OCR0A = 0;
     OCR2B = 125;
+    OCR2A = 0;
   } else if (distance > 5) {    // if greater than 5 but less than 15, 1/3 speed
     OCR0B = 80;
+    OCR0A = 0;
     OCR2B = 80;
+    OCR2A = 0;
   }
   else {                        // less than 5 cm, turn to the right by sending signal
     OCR0B = 125;                // to the right reverse PWM and left forwar PWM
