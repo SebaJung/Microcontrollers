@@ -66,7 +66,7 @@ void setup() {
 
   // sets the interrupt enable on SREG
   sei();
-  // start the 
+  // start the motors by triggering the forward PWM
   OCR0B = 255;
   OCR0A = 0;
   OCR2B = 255;
