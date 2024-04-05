@@ -136,12 +136,13 @@ ISR(TIMER1_CAPT_vect)
   static unsigned char x = 0;               // variable used to change between conditions
   if (!x)                                   // if x is not equal to its value
   {
-    capt[0] = count + ICR1;
-    TCCR1B &= 0xBF;                         // clears the ICES1 bit and captures input on falling edge
-  } else
-  {
     capt[1] = count + ICR1;
     TCCR1B |= 0x40;                         // sets the ICES1 bit and captures input on rising edge
+  }
+   else
+  {
+    capt[0] = count + ICR1;
+    TCCR1B &= 0xBF;                         // clears the ICES1 bit and captures input on falling edge
   }
   x ^= 1;                                   // toggling x to change the condition of the statement
 }
