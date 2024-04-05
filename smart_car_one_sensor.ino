@@ -7,7 +7,7 @@
   A0: Left Line Sensor
   A1: Center Line Sensor
   A2: Right Line Sensor
-  A3: 
+  A3:
   A4: Right whisker
   A5: Left whisker
   D0:
@@ -99,13 +99,16 @@ void loop() {
   sei();
 
   unsigned int distance = (tHigh * 17182L) / 10000;      // gets the whole number of distance
+
+  speedControl(distance);
+  
   Serial.println(distance);
 
   _delay_ms(120);         // reduce flickering
 }
 
 void speedControl(unsigned int distance) {
-   if (distance > 25) {        // if greater than 25 cm, full speed
+  if (distance > 25) {        // if greater than 25 cm, full speed
     OCR0B = 255;
     OCR2B = 255;
   } else if (distance > 15) {    // if greater than 15 but less than 25, half speed
@@ -148,4 +151,3 @@ ISR(TIMER0_COMPA_vect)
 {
 
 }
-
