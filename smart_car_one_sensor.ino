@@ -103,7 +103,6 @@ void loop() {
   
   Serial.println(distance);
 
-  _delay_ms(120);         // reduce flickering
 }
 
 void speedControl(unsigned int distance) {
