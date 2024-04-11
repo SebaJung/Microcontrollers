@@ -28,36 +28,36 @@
 
 void setup() {
 
-  // clears the interrupt enable on SREG
-  cli();
-
   // output pin for the PWM signals of motor control and trigger pin
   DDRD = 0xFC;
 
   // output pin for the PWM signals of motor control
   DDRB = 0x08;
 
+  // clears the interrupt enable on SREG
+  cli();
+
   TCCR0A = 0xA1;  // Using phase-correct PWM, clear on A, clear on B
   TCCR0B = 0x01;  // with prescale value of 1
-  TIMSK0 = 0x06;
+
 
   TCCR2A = 0xA1;  // Using phase-correct PWM, clear on A, clear on B
   TCCR2B = 0x01;  // with prescale value of 1
-  TIMSK2 = 0x06;
+
 
   PCICR = 0x02;   // activates the pin change interrupt
   PCMSK1 = 0x30;  // on pins A4 and A5
 
   // sets the interrupt enable on SREG
   sei();
-  PORTD |= 0x90;
+
 }
 
 volatile unsigned char button = 0;
 
 void loop() {
   // enables the motor control
-
+  PORTD |= 0x90;
 
   if (button == 0x00)       // if no bumper closed, dont reverse
     goForward();
@@ -65,69 +65,51 @@ void loop() {
     rightWhisker();
   else if (button == 0x20)
     leftWhisker();
-  else if (button == 0x30)
+  else if (button == 0x30) {
+    _delay_ms(5);
     rightTurn();
-
+  }
 }
 
 void goForward() {
   OCR0A = 0;
-  OCR0B = 120;
+  OCR0B = 150;
   OCR2A = 0;
-  OCR2B = 120;
+  OCR2B = 150;
 }
 
 void rightWhisker() {
-  OCR0A = 120;                // if right bumper hits, reverse backwards
+  OCR0A = 150;                // if right bumper hits, reverse backwards
   OCR0B = 0;                // if right bumper hits, dont forward
   OCR2A = 80;                // if right bumper hits, dont reverse
   OCR2B = 0;                // if right bumper hits, dont forward
   _delay_ms(500);              // for 50ms then not reverse anymore
   OCR0A = 0;
-  OCR0B = 120;
-  OCR2B = 120;
+  OCR0B = 150;
+  OCR2B = 150;
 }
 
 void leftWhisker() {
   OCR0A = 80;        // if left bumper is hit, dont reverse
   OCR0B = 0;        // if left bumper is hit, dont forward for
   OCR2B = 0;        // if left bumper is hit, dont forward for
-  OCR2A = 120;        // if left bumper is hit, reverse for
+  OCR2A = 150;        // if left bumper is hit, reverse for
   _delay_ms(500);      // 50ms and then go forward
   OCR2A = 0;
-  OCR2B = 120;
-  OCR0B = 120;
+  OCR2B = 150;
+  OCR0B = 150;
 }
 
 void rightTurn() {
-  OCR0A = 120;        // if both bumpers is hit, reverse a lil
-  OCR0B = 0;
+  OCR2A = 150;        // rotate 90 degrees and go forward
   OCR2B = 0;
-  OCR2A = 120;
-  _delay_ms(500);
-  OCR2A = 120;        // rotate 90 degrees and go forward
-  OCR2B = 0;
-  OCR0B = 120;
-  _delay_ms(500);
-  OCR2A = 0;          // go forward
-  OCR2B = 120;
-  OCR0B = 120;
+  OCR0B = 150;
   OCR0A = 0;
-  if (button == 0x30)  {
-    OCR0A = 120;        // if both bumpers is hit, reverse a lil
-    OCR0B = 0;
-    OCR2B = 0;
-    OCR2A = 120;
-    _delay_ms(500);
-    OCR2A = 120;        // rotate 90 degrees and go forward
-    OCR2B = 0;
-    OCR0B = 120;
-    _delay_ms(1500);
-    OCR2A = 0;          // go forward
-    OCR2B = 120;
-    OCR0B = 120;
-    OCR0A = 0;
-  }
+  _delay_ms(2000);
+  OCR2A = 0;          // go forward
+  OCR2B = 150;
+  OCR0B = 150;
+  OCR0A = 0;
 }
 
 
