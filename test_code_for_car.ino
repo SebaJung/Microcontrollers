@@ -54,20 +54,24 @@ void setup() {
 }
 
 volatile unsigned char button = 0;
-
+volatile unsigned char middle = 0;
 void loop() {
   // enables the motor control
   PORTD |= 0x90;
 
-  if (button == 0x00)       // if no bumper closed, dont reverse
-    goForward();
-  else if (button == 0x10)
-    rightWhisker();
-  else if (button == 0x20)
-    leftWhisker();
-  else if (button == 0x30) {
-    _delay_ms(5);
-    rightTurn();
+  switch (middle) {
+    case (0):
+      goForward();
+      break;
+    case (1):
+      rightWhisker();
+      break;
+    case (2):
+      leftWhisker();
+      break;
+    case (3):
+      rightTurn();
+      break;
   }
 }
 
@@ -105,7 +109,7 @@ void rightTurn() {
   OCR2B = 0;
   OCR0B = 150;
   OCR0A = 0;
-  _delay_ms(2000);
+  _delay_ms(500);
   OCR2A = 0;          // go forward
   OCR2B = 150;
   OCR0B = 150;
@@ -115,5 +119,15 @@ void rightTurn() {
 
 ISR(PCINT1_vect)
 {
+  _delay_ms(50);
   button = (PINC & 0x30);
+  if (button == 0x00)       // if no bumper closed, dont reverse
+    middle = 0;
+  else if (button == 0x10)
+    middle = 1;
+  else if (button == 0x20)
+    middle = 2;
+  else if (button == 0x30)
+    middle = 3;
+
 }
