@@ -4,9 +4,9 @@
   Written: March 22, 2024
   Edited: March 22, 2024
   I/O Pins
-  A0: Left Line Sensor
-  A1: Center Line Sensor
-  A2: Right Line Sensor
+  A0: 
+  A1: 
+  A2: 
   A3:
   A4: Right whisker
   A5: Left whisker
@@ -22,8 +22,8 @@
   D9:
   D10:
   D11: Right Reverse PWM - OC2A
-  D12: Left Wheel Encoder
-  D13: Right Wheel Encoder
+  D12: 
+  D13: 
 */
 
 void setup() {
@@ -128,7 +128,7 @@ void goOtherWay() {   // alternate case if the wall is still hit face on...
     _delay_ms(1500);
   }
   OCR2A = 0;          // go forward otherwise
-  OCR2B = 150;
+  OCR2B = 150;        
   OCR0B = 150;
   OCR0A = 0;
 }
