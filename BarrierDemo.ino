@@ -28,7 +28,7 @@
 
 void setup() {
 
-  DDRD = 0xFC;              // output pin for the PWM signals of motor control and trigger pin
+  DDRD = 0xF8;              // output pin for the PWM signals of motor control and trigger pin
 
   DDRB = 0x08;              // output pin for the PWM signals of motor control
 
