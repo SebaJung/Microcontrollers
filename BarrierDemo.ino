@@ -99,7 +99,7 @@ void leftWhisker() { // if left bumper is hit...
   OCR0A = 80;        //left reverse signal half speed of right
   OCR0B = 0;
   OCR2B = 0;
-  OCR2A = 150;        // left reverse signal
+  OCR2A = 150;        // right reverse signal
   _delay_ms(500);      // 500ms and then go forward
   OCR2A = 0;
   OCR2B = 150;        // go forward with both signals at same speed
