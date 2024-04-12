@@ -1,8 +1,8 @@
 /*
   MUX Sensors
-  By: Carlos Perez
+  By: Carlos, Jon, Sebastian
   Written: March 22, 2024
-  Edited: March 22, 2024
+  Edited: April 11, 2024
   I/O Pins
   A0: 
   A1: 
