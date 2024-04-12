@@ -48,9 +48,15 @@ void setup() {
   PCICR = 0x02;   // activates the pin change interrupt
   PCMSK1 = 0x30;  // on pins A4 and A5
 
+
+
   // sets the interrupt enable on SREG
   sei();
 
+  OCR0A = 0;
+  OCR0B = 150;
+  OCR2A = 0;
+  OCR2B = 150;
 }
 
 volatile unsigned char button = 0;
@@ -109,13 +115,23 @@ void rightTurn() {
   OCR2B = 0;
   OCR0B = 150;
   OCR0A = 0;
-  _delay_ms(500);
+  _delay_ms(750);
   OCR2A = 0;          // go forward
-  OCR2B = 150;
+  OCR2B = 120;
   OCR0B = 150;
   OCR0A = 0;
+  goOtherWay();
 }
 
+void goOtherWay() {
+  while (middle == 1) {
+    OCR2A = 150;        // rotate 180 degrees and go forward
+    OCR2B = 0;
+    OCR0B = 150;
+    OCR0A = 0;
+    _delay_ms(1500);
+  }
+}
 
 ISR(PCINT1_vect)
 {
