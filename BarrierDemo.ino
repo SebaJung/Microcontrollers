@@ -143,6 +143,6 @@ ISR(PCINT1_vect)
     middle = 1;
   else if (button == 0x20)  // left hit
     middle = 2;
-  else if (button == 0x30)  // both hit
+  else  // both hit
     middle = 3;
 }
