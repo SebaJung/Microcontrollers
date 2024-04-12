@@ -113,7 +113,7 @@ void rightTurn() {
   OCR0A = 0;
   _delay_ms(750);
   OCR2A = 0;          // go forward
-  OCR2B = 120;
+  OCR2B = 150;
   OCR0B = 150;
   OCR0A = 0;
   goOtherWay();     // function call to alternate case
@@ -121,14 +121,14 @@ void rightTurn() {
 
 void goOtherWay() {   // alternate case if the wall is still hit face on...
   while (middle == 1) { // while the right bumper is still hit...
-    OCR2A = 150;        // execute rotate "180 degrees" action
-    OCR2B = 0;
-    OCR0B = 150;
-    OCR0A = 0;
+    OCR2A = 0;        // execute rotate "180 degrees" action
+    OCR2B = 150;
+    OCR0B = 0;        // forward right, reverse left
+    OCR0A = 150;
     _delay_ms(1500);
   }
   OCR2A = 0;          // go forward otherwise
-  OCR2B = 120;
+  OCR2B = 150;
   OCR0B = 150;
   OCR0A = 0;
 }
