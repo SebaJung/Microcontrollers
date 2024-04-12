@@ -48,11 +48,6 @@ void setup() {
 
   sei();          // sets the interrupt enable on SREG
 
-
-  OCR0A = 0;        // initially has the car driving forward
-  OCR0B = 150;
-  OCR2A = 0;
-  OCR2B = 150;
 }
 
 volatile unsigned char button = 0;
