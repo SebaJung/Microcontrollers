@@ -1,5 +1,5 @@
 /*
-  MUX Sensors
+  Barrier Demo With Whiskers
   By: Carlos, Jon, Sebastian
   Written: March 22, 2024
   Edited: April 11, 2024
