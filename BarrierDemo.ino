@@ -55,11 +55,9 @@ volatile unsigned char middle = 0;
 void loop() {
   // enables the motor control
   PORTD |= 0x90;
-
+  goForward();
+  
   switch (middle) {
-    case (0):             // nothing is hit
-      goForward();
-      break;
     case (1):             // right whisker is hit
       rightWhisker();
       break;
