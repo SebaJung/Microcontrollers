@@ -42,7 +42,8 @@ void setup() {
 
   sei();          // sets the interrupt enable on SREG
 
-  PORTB |= 0x30;  // enables internal pull-up on wheel encoders
+  PORTB |= 0x10;  // enables internal pull-up on left encoder
+  PORTD |= 0x04;  // enables internal pull-up on right encoder
 
   Serial.begin(9600); // serial monitor start up command w baud rate of 9600
 }
@@ -50,6 +51,7 @@ void setup() {
 void loop() {
   unsigned int avg = average(leftWheel, rightWheel);    // average value of the toggles between both the wheels
   //Serial.println(avg);
+
 }
 
 unsigned int average(unsigned int leftWheel, unsigned int rightWheel)
@@ -61,12 +63,12 @@ ISR(PCINT0_vect)      // left wheel encoder
 {
   if ((button = PINB & 0x10) == 0)
     leftWheel++;
-  Serial.println(leftWheel);
+  //Serial.println();
 }
 
 ISR(INT0_vect)      // right wheel encoder
 {
-  //if ((button = PINB & 0x10) == 0)
-  rightWheel++;
-  //Serial.println(rightWheel);
+  if ((button = PIND & 0x04) == 0)
+    rightWheel++;
+  Serial.println(rightWheel);
 }
