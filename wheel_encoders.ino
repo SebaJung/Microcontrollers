@@ -12,7 +12,7 @@
   A5: Left whisker
   D0:
   D1:
-  D2:
+  D2: Right Wheel Encoder
   D3: Right Forward PWM - OCR2B
   D4: Left Motor Control
   D5: Left Forward PWM - OC0B
@@ -23,7 +23,7 @@
   D10:
   D11: Right Reverse PWM - OC2A
   D12: Left Wheel Encoder
-  D13: Right Wheel Encoder
+  D13: Trigger pin
 */
 
 volatile unsigned char button = 1;
@@ -35,7 +35,10 @@ void setup() {
   cli();          // clears the interrupt enable on SREG
 
   PCICR = 0x01;   // activates the pin change interrupt on PORT B
-  PCMSK0 = 0x30;  // pins D12 and D13 and enables interrupts
+  PCMSK0 = 0x10;  // pins D12 and enables interrupts
+
+  EICRA = 0x02;   // pin D2 and triggers on falling edge
+  EIMSK = 0x01;   // enables interrupts on D2
 
   sei();          // sets the interrupt enable on SREG
 
@@ -54,15 +57,16 @@ unsigned int average(unsigned int leftWheel, unsigned int rightWheel)
   return ((leftWheel + rightWheel) / 2);
 }
 
-ISR(PCINT0_vect)
+ISR(PCINT0_vect)      // left wheel encoder
 {
-  if ((button = PINB & 0x10) == 0) {
+  if ((button = PINB & 0x10) == 0)
     leftWheel++;
-    //rightWheel++;
-  } else if ((button = PINB & 0x20) == 0)
-    rightWheel++;
-  /*else if ((button = PINB & 0x30) == 2)
-    leftWheel;
-  */
-  Serial.println(rightWheel);
+  Serial.println(leftWheel);
+}
+
+ISR(INT0_vect)      // right wheel encoder
+{
+  //if ((button = PINB & 0x10) == 0)
+  rightWheel++;
+  //Serial.println(rightWheel);
 }
