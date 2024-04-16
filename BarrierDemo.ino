@@ -1,12 +1,12 @@
 /*
-  Barrier Demo With Whiskers
-  By: Carlos, Jon, Sebastian
+  MUX Sensors
+  By: Carlos Perez
   Written: March 22, 2024
-  Edited: April 11, 2024
+  Edited: March 22, 2024
   I/O Pins
-  A0: 
-  A1: 
-  A2: 
+  A0: Left Line Sensor
+  A1: Center Line Sensor
+  A2: Right Line Sensor
   A3:
   A4: Right whisker
   A5: Left whisker
@@ -22,13 +22,13 @@
   D9:
   D10:
   D11: Right Reverse PWM - OC2A
-  D12: 
-  D13: 
+  D12: Left Wheel Encoder
+  D13: Right Wheel Encoder
 */
 
 void setup() {
 
-  DDRD = 0xF8;              // output pin for the PWM signals of motor control and trigger pin
+  DDRD = 0xFC;              // output pin for the PWM signals of motor control and trigger pin
 
   DDRB = 0x08;              // output pin for the PWM signals of motor control
 
@@ -48,16 +48,22 @@ void setup() {
 
   sei();          // sets the interrupt enable on SREG
 
+
+  OCR0A = 0;        // initially has the car driving forward
+  OCR0B = 150;
+  OCR2A = 0;
+  OCR2B = 150;
 }
 
-volatile unsigned char button = 0;
 volatile unsigned char middle = 0;
 void loop() {
   // enables the motor control
   PORTD |= 0x90;
-  goForward();
-  
+
   switch (middle) {
+    case (0):             // nothing is hit
+      goForward();
+      break;
     case (1):             // right whisker is hit
       rightWhisker();
       break;
@@ -92,7 +98,7 @@ void leftWhisker() { // if left bumper is hit...
   OCR0A = 80;        //left reverse signal half speed of right
   OCR0B = 0;
   OCR2B = 0;
-  OCR2A = 150;        // right reverse signal
+  OCR2A = 150;        // left reverse signal
   _delay_ms(500);      // 500ms and then go forward
   OCR2A = 0;
   OCR2B = 150;        // go forward with both signals at same speed
@@ -106,36 +112,33 @@ void rightTurn() {
   OCR0A = 0;
   _delay_ms(750);
   OCR2A = 0;          // go forward
-  OCR2B = 150;
+  OCR2B = 120;
   OCR0B = 150;
   OCR0A = 0;
-  goOtherWay();     // function call to alternate case
-}
-
-void goOtherWay() {   // alternate case if the wall is still hit face on...
-  while (middle == 1) { // while the right bumper is still hit...
-    OCR2A = 0;        // execute rotate "180 degrees" action
-    OCR2B = 150;
-    OCR0B = 0;        // forward right, reverse left
-    OCR0A = 150;
+  while (middle) { // while the right bumper is still hit...
+    OCR2A = 150;        // execute rotate "180 degrees" action
+    OCR2B = 0;
+    OCR0B = 150;
+    OCR0A = 0;
     _delay_ms(1500);
   }
   OCR2A = 0;          // go forward otherwise
-  OCR2B = 150;        
+  OCR2B = 120;
   OCR0B = 150;
   OCR0A = 0;
 }
 
-ISR(PCINT1_vect)
-{
-  _delay_ms(50);            // allows for the data to register first and then it can be read
-  button = (PINC & 0x30);
-  if (button == 0x00)       // nothing hit
-    middle = 0;
-  else if (button == 0x10)  // right hit
-    middle = 1;
-  else if (button == 0x20)  // left hit
-    middle = 2;
-  else  // both hit
-    middle = 3;
-}
+  ISR(PCINT1_vect)
+  {
+    _delay_ms(50);            // allows for the data to register first and then it can be read
+    static unsigned char button = 0;
+    button = (PINC & 0x30);
+    if (button == 0x00)       // nothing hit
+      middle = 0;
+    else if (button == 0x10)  // right hit
+      middle = 1;
+    else if (button == 0x20)  // left hit
+      middle = 2;
+    else if (button == 0x30)  // both hit
+      middle = 3;
+  }
