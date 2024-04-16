@@ -1,6 +1,6 @@
 /*
   Wheel Encoders
-  By: Carlos, Sebastian, John
+  By: Carlos, John, Sebastian
   Written: April 9, 2024
   Edited: April 16, 2024
   I/O Pins
