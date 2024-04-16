@@ -34,8 +34,9 @@ void setup() {
 
   cli();          // clears the interrupt enable on SREG
 
-  PCICR = 0x01;   // activates the pin change interrupt on PORT B
+  PCICR = 0x03;   // activates the pin change interrupt on PORT B
   PCMSK0 = 0x10;  // pins D12 and enables interrupts
+  PCMSK1 = 0x07;  // pins A0-A2 and enables interrupts
 
   EICRA = 0x02;   // pin D2 and triggers on falling edge
   EIMSK = 0x01;   // enables interrupts on D2
