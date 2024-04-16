@@ -1,8 +1,8 @@
 /*
-  MUX Sensors
+  Whiskers 
   By: Carlos Perez
   Written: March 22, 2024
-  Edited: March 22, 2024
+  Edited: April 16, 2024
   I/O Pins
   A0: Left Line Sensor
   A1: Center Line Sensor
@@ -48,14 +48,10 @@ void setup() {
 
   sei();          // sets the interrupt enable on SREG
 
-
-  OCR0A = 0;        // initially has the car driving forward
-  OCR0B = 150;
-  OCR2A = 0;
-  OCR2B = 150;
 }
 
 volatile unsigned char middle = 0;
+
 void loop() {
   // enables the motor control
   PORTD |= 0x90;
