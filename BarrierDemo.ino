@@ -102,6 +102,11 @@ void leftWhisker() { // if left bumper is hit...
 }
 
 void rightTurn() {
+  OCR2A = 150;        // BACKWARDS 50MS
+  OCR2B = 0;
+  OCR0B = 0;
+  OCR0A = 150;
+  _delay_ms(50);
   OCR2A = 150;        // spin "90 degrees" and go forward
   OCR2B = 0;
   OCR0B = 150;
@@ -111,7 +116,7 @@ void rightTurn() {
   OCR2B = 120;
   OCR0B = 150;
   OCR0A = 0;
-  while (middle) { // while the right bumper is still hit...
+  while (middle == 1) { // while the right bumper is still hit...
     OCR2A = 150;        // execute rotate "180 degrees" action
     OCR2B = 0;
     OCR0B = 150;
