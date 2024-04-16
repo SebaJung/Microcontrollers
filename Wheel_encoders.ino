@@ -32,6 +32,10 @@ volatile unsigned int rightWheel = 0;
 
 void setup() {
 
+  DDRD = 0xFC;              // output pin for the PWM signals of motor control and trigger pin
+
+  DDRB = 0x08;              // output pin for the PWM signals of motor control
+
   cli();          // clears the interrupt enable on SREG
 
   PCICR = 0x03;   // activates the pin change interrupt on PORT B
