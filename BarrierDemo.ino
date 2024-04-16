@@ -104,9 +104,9 @@ void leftWhisker() { // if left bumper is hit...
 void rightTurn() {
   OCR2A = 150;        // BACKWARDS 50MS
   OCR2B = 0;
+  OCR0A = 150;                // left reverse signal
   OCR0B = 0;
-  OCR0A = 150;
-  _delay_ms(50);
+  _delay_ms(750);    //time that dictates how far backwards the car moves... subject to change
   OCR2A = 150;        // spin "90 degrees" and go forward
   OCR2B = 0;
   OCR0B = 150;
