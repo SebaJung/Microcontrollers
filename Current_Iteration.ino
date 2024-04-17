@@ -43,6 +43,9 @@ void setup() {
   TCCR2A = 0xA1;  // Using phase-correct PWM, clear on A, clear on B
   TCCR2B = 0x01;  // with prescale value of 1
 
+  ADCSRA = 0xCF;  // auto trigger disable, prescale of 128 ADC enabled and start conversion bit on
+  ADCSRB = 0x00;  // free-running mode
+  ADMUX = 0x60;   // AVCC mode, 8-bit precision, analog bit A0 originally
 
   PCICR = 0x03;   // activates the pin change interrupt
   PCMSK0 = 0x10;  // pins D12 and enables interrupts
@@ -77,7 +80,7 @@ void loop() {
       rightTurn();
       break;
   }
-
+  
   unsigned int avgCount = average(leftWheel, rightWheel);    // average value of the toggles between both the wheels
   unsigned int distance = (avgCount * 105L) / 100;
   
@@ -89,6 +92,30 @@ void loop() {
   Serial.print('\t');
   Serial.print(distance);
   Serial.print('\n');
+
+  //section below relating to line sensor:
+  static unsigned char x = 0;       // variable that will keep track of the ADMUX changes
+  if(centerSensor >= 200)
+    //go forward
+  else if(leftSensor >= 200)
+    //
+  else if(rightSensor >= 200)
+
+  unsigned char muxCode[x] = {0X60, 0X61, 0X62};
+  ADMUX = muxCode[x];
+  Serial.print(leftSensor);
+  Serial.print('\t');
+  Serial.print(centerSensor);
+  Serial.print('\t');
+  Serial.print(rightSensor);
+  Serial.print('\t');
+  Serial.print(ADMUX);
+  Serial.print('\n');
+  
+  x++;
+  // ADD AN X VARIBALE THAT WILL CYCLE THROUGH THE ADMUX VALUES
+  if (x > 2)
+    x = 0;
 }
 
 unsigned int average(unsigned int leftWheel, unsigned int rightWheel)
@@ -177,4 +204,21 @@ ISR(INT0_vect)      // right wheel encoder
 {
   if ((button = PIND & 0x04) == 0)
     rightWheel++;
+}
+
+ISR(ADC_vect) {
+  /* Depending on which ADMUX value is set, it
+      will store the value of that ADC register
+      onto that sensor's variable
+  */
+  if (ADMUX == 0x60)     // A0 left sensor
+    leftSensor = ADCH;
+
+  else if (ADMUX == 0x61)     // A1 center sensor
+    centerSensor = ADCH;
+
+  else if (ADMUX == 0x62)     // A2 right sensor
+    rightSensor = ADCH;
+
+  ADCSRA |= 0x40;           // start a new conversion
 }
