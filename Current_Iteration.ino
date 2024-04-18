@@ -63,7 +63,9 @@ volatile unsigned char button = 0;
 volatile unsigned char middle = 0;
 volatile unsigned int leftWheel = 0;
 volatile unsigned int rightWheel = 0;
-
+volatile unsigned int rightSensor = 0;
+volatile unsigned int leftSensor = 0;
+volatile unsigned int centerSensor = 0;
 void loop() {
                               
   PORTD |= 0x90;                    // enables the motor control
@@ -83,7 +85,7 @@ void loop() {
   
   unsigned int avgCount = average(leftWheel, rightWheel);    // average value of the toggles between both the wheels
   unsigned int distance = (avgCount * 105L) / 100;
-  
+  /*
   Serial.print(avgCount);
   Serial.print('\t');
   Serial.print(leftWheel);
@@ -92,22 +94,23 @@ void loop() {
   Serial.print('\t');
   Serial.print(distance);
   Serial.print('\n');
-
+*/
   //section below relating to line sensor:
   static unsigned char x = 0;                               // variable that will keep track of the ADMUX changes
 
   // These are not mutually exclusive so I made it 3 'if' statements
   if(centerSensor >= 200 && (rightSensor < 200) && (leftSensor < 200))
     goForward();
-  if(leftSensor >= 200)
+  if(leftSensor >= 200);
     // Increase speed of left wheel(or reduce speed of right wheel) to encourage the car to yaw right
     //OCR0B = 200 or OCR2B = 100
-  if(rightSensor >= 200)
+  if(rightSensor >= 200);
     // Increase speed of right wheel(or reduce speed of left wheel) to encourage the car to yaw left
     //OCR2B = 200 or OCR0B = 100
 
   unsigned char admuxCode[x] = {0X60, 0X61, 0X62};
   ADMUX = admuxCode[x];
+  
   Serial.print(leftSensor);
   Serial.print('\t');
   Serial.print(centerSensor);
