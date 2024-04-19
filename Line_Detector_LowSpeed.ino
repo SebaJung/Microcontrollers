@@ -86,9 +86,8 @@ void loop() {
   static unsigned char x = 0;          // variable that will keep track of the ADMUX changes
   
   if ((centerSensor >= 200)) {
-    if ((centerSensor >= 200) && (leftSensor < 100) && (rightSensor < 100)) {
-    goForward();
-  }
+    if ((centerSensor >= 200) && (leftSensor < 100) && (rightSensor < 100)) 
+      goForward();
     if (leftSensor >= 200)
       leftDetect();             // Increase speed of left wheel(or reduce speed of right wheel)
     // to encourage the car to yaw right OCR0B = 200 or OCR2B = 100
