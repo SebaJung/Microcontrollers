@@ -45,7 +45,7 @@ void setup() {
 
   ADCSRA = 0xCF;                    // auto trigger disable, prescale of 128 ADC enabled and start conversion bit on
   ADCSRB = 0x00;                    // free-running mode
-  ADMUX = 0x60;                     // AVCC mode, 8-bit precision, analog bit A0 originally
+  ADMUX = 0x40;                     // AVCC mode, 10-bit precision, analog bit A0 originally
 
   PCICR = 0x01;                     // activates the pin change interrupt
   PCMSK0 = 0x10;                    // pins D12 and enables interrupts
@@ -62,9 +62,9 @@ volatile unsigned char button = 0;
 volatile unsigned char middle = 0;
 volatile unsigned int leftWheel = 0;
 volatile unsigned int rightWheel = 0;
-volatile unsigned char leftSensor = 0;
-volatile unsigned char centerSensor = 0;
-volatile unsigned char rightSensor = 0;
+volatile unsigned int leftSensor = 0;
+volatile unsigned int centerSensor = 0;
+volatile unsigned int rightSensor = 0;
 
 void loop() {
   PORTD |= 0x90;                    // enables the motor control
@@ -84,22 +84,26 @@ void loop() {
 
   //section below relating to line sensor:
   static unsigned char x = 0;                             // variable that will keep track of the ADMUX changes
-  unsigned char muxCode[x] = {0X60, 0X61, 0X62};
+  unsigned char muxCode[x] = {0X40, 0X41, 0X42};
 
-  if ((centerSensor >= 190) && ((leftSensor < 200) || (rightSensor < 200)) || (distance < 1500)) {
+  if ((centerSensor >= 800) && (((leftSensor < 700) || (rightSensor < 700)) || (distance < 1500))) {
 
     goForward();
-    if ((leftSensor >= 200) && (rightSensor < 200))
+
+    if ((leftSensor >= 700) && (rightSensor < 700))
       leftDetect();                   // Increase speed of left wheel(or reduce speed of right wheel)
     // to encourage the car to yaw right OCR0B = 200 or OCR2B = 100
-    else if ((leftSensor < 200) && (rightSensor >= 200))
+
+    else if ((leftSensor < 700) && (rightSensor >= 700))
       rightDetect();                  // Increase speed of right wheel(or reduce speed of left wheel)
     // to encourage the car to yaw left OCR2B = 200 or OCR0B = 100
-    else if ((centerSensor < 190) && (distance >= 1500)) {
-      OCR0B = 0;
-      OCR2B = 0;
-    }
   }
+  else if ((centerSensor < 800) && (distance >= 1600) && (leftSensor < 700) && (rightSensor < 700)) {
+    OCR0B = 0;
+    OCR2B = 0;
+  }
+
+
   ADMUX = muxCode[x];
   if (x > 2)                        // Check status of x
     x = 0;
@@ -112,8 +116,9 @@ void loop() {
   Serial.print('\t');
   Serial.print(rightSensor);
   Serial.print('\t');
-  Serial.print(ADMUX);
+  Serial.print(distance);
   Serial.print('\n');
+
 }
 
 // Do we want to use a circular buffer?
@@ -123,21 +128,22 @@ unsigned int average(unsigned int leftWheel, unsigned int rightWheel) {
 
 void goForward() {                  // if nothing is hit...
   OCR0A = 0;
-  OCR0B = 150;                      // sends the left motor forward
+  OCR0B = 170;                      // sends the left motor forward
   OCR2A = 0;
-  OCR2B = 150;                      // sends the right motor forward
+  OCR2B = 170;                      // sends the right motor forward
 }
 
 void leftDetect() {             // if left sensor off tape...
   OCR0A = 0;
   OCR0B = 0;
   OCR2A = 0;                    // right reverse signal half speed of left
-  OCR2B = 120;
+  OCR2B = 150;
 }
 
 void rightDetect() {            // if left bumper is hit...
+
   OCR0A = 0;                    //left reverse signal half speed of right
-  OCR0B = 120;
+  OCR0B = 150;
   OCR2B = 0;
   OCR2A = 0;                  // right reverse signal
 }
@@ -157,14 +163,14 @@ ISR(ADC_vect) {
       will store the value of that ADC register
       onto that sensor's variable
   */
-  if (ADMUX == 0x60)          // A0 left sensor
-    leftSensor = ADCH;
+  if (ADMUX == 0x40)          // A0 left sensor
+    leftSensor = ADC;
 
-  else if (ADMUX == 0x61)         // A1 center sensor
-    centerSensor = ADCH;
+  else if (ADMUX == 0x41)         // A1 center sensor
+    centerSensor = ADC;
 
-  else if (ADMUX == 0x62)         // A2 right sensor
-    rightSensor = ADCH;
+  else if (ADMUX == 0x42)         // A2 right sensor
+    rightSensor = ADC;
 
   ADCSRA |= 0x40;               // start a new conversion
 }
