@@ -105,7 +105,8 @@ void loop() {
     // to encourage the car to yaw left OCR2B = 0 or OCR0B = 50
   }
 
-  if (distance > 2000) { // UPDATE THIS
+
+  if ((centerSensor < 100) && (rightSensor < 100) && (leftSensor < 100) && (distance > 1800)) {
     OCR0B = 0;
     OCR2B = 0;
   }
