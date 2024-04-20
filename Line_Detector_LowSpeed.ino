@@ -102,8 +102,7 @@ void loop() {
     OCR0B = 0;
     OCR2B = 0;
   }
-
-
+  
   ADMUX = muxCode[x];
   if (x > 2)                        // Check status of x
     x = 0;
@@ -118,7 +117,6 @@ void loop() {
   Serial.print('\t');
   Serial.print(distance);
   Serial.print('\n');
-
 }
 
 // Do we want to use a circular buffer?
