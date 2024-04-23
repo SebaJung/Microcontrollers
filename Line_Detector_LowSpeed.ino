@@ -66,6 +66,7 @@ volatile unsigned int leftSensor = 0;
 volatile unsigned int centerSensor = 0;
 volatile unsigned int rightSensor = 0;
 
+
 void loop() {
   PORTD |= 0x90;                    // enables the motor control
 
@@ -83,10 +84,8 @@ void loop() {
   */
 
   //section below relating to line sensor:
-  static unsigned char x = 0;                             // variable that will keep track of the ADMUX changes
-  unsigned char muxCode[x] = {0X40, 0X41, 0X42};
 
-  if ((centerSensor >= 800) && (((leftSensor < 700) || (rightSensor < 700)) || (distance < 1500))) {
+  if ((centerSensor >= 800) && (((leftSensor < 700) || (rightSensor < 700)) || (distance < 1800))) {
 
     goForward();
 
@@ -98,16 +97,10 @@ void loop() {
       rightDetect();                  // Increase speed of right wheel(or reduce speed of left wheel)
     // to encourage the car to yaw left OCR2B = 200 or OCR0B = 100
   }
-  else if ((centerSensor < 800) && (distance >= 1600) && (leftSensor < 700) && (rightSensor < 700)) {
+  else if ((centerSensor < 800) && (distance >= 1800) && (leftSensor < 700) && (rightSensor < 700)) {
     OCR0B = 0;
     OCR2B = 0;
   }
-  
-  ADMUX = muxCode[x];
-  if (x > 2)                        // Check status of x
-    x = 0;
-  else
-    x++;
 
   Serial.print(leftSensor);
   Serial.print('\t');
@@ -126,9 +119,9 @@ unsigned int average(unsigned int leftWheel, unsigned int rightWheel) {
 
 void goForward() {                  // if nothing is hit...
   OCR0A = 0;
-  OCR0B = 170;                      // sends the left motor forward
+  OCR0B = 150;                      // sends the left motor forward
   OCR2A = 0;
-  OCR2B = 170;                      // sends the right motor forward
+  OCR2B = 150;                      // sends the right motor forward
 }
 
 void leftDetect() {             // if left sensor off tape...
@@ -161,14 +154,18 @@ ISR(ADC_vect) {
       will store the value of that ADC register
       onto that sensor's variable
   */
-  if (ADMUX == 0x40)          // A0 left sensor
+
+  if (ADMUX == 0x40) {         // A0 left sensor
     leftSensor = ADC;
-
-  else if (ADMUX == 0x41)         // A1 center sensor
+    ADMUX = 0x41;
+  } else if (ADMUX == 0x41) {        // A1 center sensor
     centerSensor = ADC;
-
-  else if (ADMUX == 0x42)         // A2 right sensor
+    ADMUX = 0x42;
+  } else if (ADMUX == 0x42) {        // A2 right sensor
     rightSensor = ADC;
+    ADMUX = 0x40;
+  }
+
 
   ADCSRA |= 0x40;               // start a new conversion
 }
