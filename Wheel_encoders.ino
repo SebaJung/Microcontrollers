@@ -62,7 +62,7 @@ void setup() {
 
 void loop() {
   unsigned int avgCount = average(leftWheel, rightWheel);    // average value of the toggles between both the wheels
-  unsigned int distance = (avgCount * 105L) / 100;
+  unsigned long distance = (avgCount * 105L) / 100;
   
   Serial.print(avgCount);
   Serial.print('\t');
