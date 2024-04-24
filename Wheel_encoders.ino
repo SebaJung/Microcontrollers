@@ -2,7 +2,7 @@
   Wheel Encoders
   By: Carlos, John, Sebastian
   Written: April 9, 2024
-  Edited: April 16, 2024
+  Edited: April 24, 2024
   I/O Pins
   A0: Left Line Sensor
   A1: Center Line Sensor
