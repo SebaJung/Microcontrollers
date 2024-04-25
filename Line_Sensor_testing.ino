@@ -93,13 +93,13 @@ void loop() {
   if (centerSensor >= 750) {
     //goForward function
     OCR0A = 0;
-    OCR0B = 255;                      // sends the left motor forward
+    OCR0B = 250;                      // sends the left motor forward
     OCR2A = 0;
-    OCR2B = 255;                      // sends the right motor forward
+    OCR2B = 250;                      // sends the right motor forward
   }
   else if (rightSensor > (leftSensor - 190)) {
     OCR0A = 0;                    //left reverse signal half speed of right
-    OCR0B = 200;
+    OCR0B = 180;
     OCR2B = 0;
     OCR2A = 150;
   }
@@ -107,10 +107,8 @@ void loop() {
     OCR0A = 150;
     OCR0B = 0;
     OCR2A = 0;                    // right reverse signal half speed of left
-    OCR2B = 200;
+    OCR2B = 180;
   }
-
-  // TURN WAS TOO SHARP AND DEFAULTS TO TURNING RIGHT UNTIL IT FINDS THE LINE AGAIN.
 
   if ((distance >= 1900) && (centerSensor < 900)) {
     OCR0B = 0;
@@ -119,12 +117,6 @@ void loop() {
     OCR2A = 0;
     
   }
-  /*
-    else if ((centerSensor < 900) && (distance >= 1800) && (leftSensor < 800) && (rightSensor < 800)) {
-    OCR0B = 0;
-    OCR2B = 0;
-    }
-  */
   Serial.print(leftSensor);
   Serial.print('\t');
   Serial.print(centerSensor);
@@ -166,7 +158,6 @@ ISR(ADC_vect) {
     rightSensor = ADC;
     ADMUX = 0x40;
   }
-
 
   ADCSRA |= 0x40;               // start a new conversion
 }
