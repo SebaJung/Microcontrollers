@@ -90,7 +90,7 @@ void loop() {
 
   //section below relating to line sensor:
 
-  if (centerSensor >= 900) {
+  if (centerSensor >= 750) {
     //goForward function
     OCR0A = 0;
     OCR0B = 255;                      // sends the left motor forward
@@ -112,9 +112,12 @@ void loop() {
 
   // TURN WAS TOO SHARP AND DEFAULTS TO TURNING RIGHT UNTIL IT FINDS THE LINE AGAIN.
 
-  if ((distance >= 1700) && (centerSensor < 900)) {
+  if ((distance >= 1900) && (centerSensor < 900)) {
     OCR0B = 0;
+    OCR0A = 0;
     OCR2B = 0;
+    OCR2A = 0;
+    
   }
   /*
     else if ((centerSensor < 900) && (distance >= 1800) && (leftSensor < 800) && (rightSensor < 800)) {
@@ -129,12 +132,6 @@ void loop() {
   Serial.print(rightSensor);
   Serial.print('\t');
   Serial.print(distance);
-  Serial.print('\t');
-  Serial.print(OCR0B);
-  Serial.print('\t');
-  Serial.print(OCR2B);
-  Serial.print('\t');
-  Serial.print(ADMUX);
   Serial.print('\n');
 }
 
