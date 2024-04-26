@@ -8,8 +8,8 @@
   A1: Center Line Sensor
   A2: Right Line Sensor
   A3:
-  A4: Right whisker
-  A5: Left whisker
+  A4:
+  A5:
   D0:
   D1:
   D2: Right Wheel Encoder
@@ -23,7 +23,7 @@
   D10:
   D11: Right Reverse PWM - OC2A
   D12: Left Wheel Encoder
-  D13: Trigger pin
+  D13:
 */
 
 void setup() {
@@ -55,11 +55,11 @@ void setup() {
 
   sei();                            // sets the interrupt enable flag on SREG
 
-  Serial.begin(9600);               // serial monitor start up command w baud rate of 9600
+  PORTD |= 0x90;                    // enables the motor control
+  
 }
 
 volatile unsigned char button = 0;
-volatile unsigned char middle = 0;
 volatile unsigned int leftWheel = 0;
 volatile unsigned int rightWheel = 0;
 volatile unsigned char leftSensor = 0;
@@ -67,121 +67,65 @@ volatile unsigned char centerSensor = 0;
 volatile unsigned char rightSensor = 0;
 
 void loop() {
-  PORTD |= 0x90;                    // enables the motor control
 
   unsigned int avgCount = average(leftWheel, rightWheel);    // average value of the toggles between both the wheels
   unsigned int distance = (avgCount * 105L) / 100;
 
-  Serial.print(avgCount);
-  Serial.print('\t');
-  Serial.print(leftWheel);
-  Serial.print('\t');
-  Serial.print(rightWheel);
-  Serial.print('\t');
-  Serial.print(distance);
-  Serial.print('\n');
-  
+  if (distance < 900) {
+    if (centerSensor >= 800) {                       // if center detects...
+      OCR0A = 0;
+      OCR0B = 200;                      // sends the left motor forward
+      OCR2A = 0;
+      OCR2B = 200;                      // sends the right motor forward
 
-  //section below relating to line sensor:
-  static unsigned char x = 0;          // variable that will keep track of the ADMUX changes
-  unsigned char muxCode[x] = {0X60, 0X61, 0X62};
-  
-  if ((centerSensor >= 800) && (((leftSensor < 700) || (rightSensor < 700)) || (distance < 750))) {
+    } else if ((leftSensor - 190) > rightSensor) {     // if left sensor detects...
+      OCR0A = 100;                       // left reverse signal
+      OCR0B = 0;
+      OCR2A = 0;
+      OCR2B = 150;                       // right forward signal
 
-    goForward();
-
-    if ((leftSensor >= 700) && (rightSensor < 700))
-      leftDetect();                   // Increase speed of left wheel(or reduce speed of right wheel)
-    // to encourage the car to yaw right OCR0B = 200 or OCR2B = 100
-
-    else if ((leftSensor < 700) && (rightSensor >= 700))
-      rightDetect();                  // Increase speed of right wheel(or reduce speed of left wheel)
-    // to encourage the car to yaw left OCR2B = 200 or OCR0B = 100
+    } else if (rightSensor > (leftSensor - 190)) {     // if right sensor detects...
+      OCR0A = 0;
+      OCR0B = 150;                       // left forward signal
+      OCR2B = 0;
+      OCR2A = 100;                       // right reverse signal
+    }
   }
-  
-  else if ((centerSensor >= 800) && (((leftSensor < 700) || (rightSensor < 700)) || (distance < 1500))) {
+  else if (distance >= 900) {
+    if (centerSensor >= 750) {                       // if center detects...
+      OCR0A = 0;
+      OCR0B = 150;                      // sends the left motor forward
+      OCR2A = 0;
+      OCR2B = 150;                      // sends the right motor forward
 
-    goSlow();
+    } else if ((leftSensor - 190) > rightSensor) {     // if left sensor detects...
+      OCR0A = 80;                       // left reverse signal
+      OCR0B = 0;
+      OCR2A = 0;
+      OCR2B = 120;                       // right forward signal
 
-    if ((leftSensor >= 700) && (rightSensor < 700))
-      leftDetectSlow();                   // Increase speed of left wheel(or reduce speed of right wheel)
-    // to encourage the car to yaw right OCR0B = 200 or OCR2B = 100
+    } else if (rightSensor > (leftSensor - 190)) {     // if right sensor detects...
+      OCR0A = 0;
+      OCR0B = 120;                       // left forward signal
+      OCR2B = 0;
+      OCR2A = 80;                       // right reverse signal
+    
 
-    else if ((leftSensor < 700) && (rightSensor >= 700))
-      rightDetectSlow();                  // Increase speed of right wheel(or reduce speed of left wheel)
-    // to encourage the car to yaw left OCR2B = 200 or OCR0B = 100
+    } else if ((centerSensor < 900) && (distance >= 1800)) {   // STOPPP MOVINGGG...
+      OCR0B = 0;
+      OCR0A = 0;
+      OCR2A = 0;
+      OCR2B = 0;
+    }
   }
-  
-  else if ((centerSensor < 800) && (distance >= 1600) && (leftSensor < 700) && (rightSensor < 700)) {
-    OCR0B = 0;
-    OCR2B = 0;
-  }
-
-  ADMUX = muxCode[x];
-  if (x > 2)                          // Check status of x
-    x = 0;
-  else
-    x++;
-
-/*
-  Serial.print(leftSensor);
-  Serial.print('\t');
-  Serial.print(centerSensor);
-  Serial.print('\t');
-  Serial.print(rightSensor);
-  Serial.print('\t');
-  Serial.print(ADMUX);
-  Serial.print('\n');
-*/
-  
 }
+
 
 // Do we want to use a circular buffer?
 unsigned int average(unsigned int leftWheel, unsigned int rightWheel) {
   return ((leftWheel + rightWheel) / 2);
 }
 
-void goForward() {                  // if nothing is hit...
-  OCR0A = 0;
-  OCR0B = 170;                      // sends the left motor forward
-  OCR2A = 0;
-  OCR2B = 170;                      // sends the right motor forward
-}
-
-void leftDetect() {             // if left sensor off tape...
-  OCR0A = 0;
-  OCR0B = 0;
-  OCR2A = 0;                    // right reverse signal half speed of left
-  OCR2B = 150;
-}
-
-void rightDetect() {            // if left bumper is hit...
-  OCR0A = 0;                    //left reverse signal half speed of right
-  OCR0B = 150;
-  OCR2B = 0;
-  OCR2A = 0;                  // right reverse signal
-}
-
-void goSlow() {
-  OCR0A = 0;
-  OCR0B = 150;                      // sends the left motor forward
-  OCR2A = 0;
-  OCR2B = 150;                      // sends the right motor forward
-}
-
-void leftDetectSlow() {           // if left sensor off tape...
-  OCR0A = 0;
-  OCR0B = 0;
-  OCR2A = 0;                    // right reverse signal half speed of left
-  OCR2B = 100;
-}
-
-void rightDetectSlow() {            // if left sensor off tape...
-  OCR0A = 0;
-  OCR0B = 100;
-  OCR2A = 0;                    // right reverse signal half speed of left
-  OCR2B = 0;
-}
 
 ISR(PCINT0_vect) {                // left wheel encoder
   if ((button = PINB & 0x10) == 0)
