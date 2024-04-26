@@ -2,7 +2,7 @@
   Barrier Demo With Whiskers and line sensors
   By: Carlos, Jon, Sebastian
   Written: March 22, 2024
-  Edited: April 18, 2024
+  Edited: April 25, 2024
   I/O Pins
   A0: Left Line Sensor
   A1: Center Line Sensor
