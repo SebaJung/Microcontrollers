@@ -142,14 +142,16 @@ ISR(ADC_vect) {
       will store the value of that ADC register
       onto that sensor's variable
   */
-  if (ADMUX == 0x40)          // A0 left sensor
+  if (ADMUX == 0x40) {               // A0 left sensor
     leftSensor = ADC;
-
-  else if (ADMUX == 0x41)         // A1 center sensor
+    ADMUX = 0x41;
+  } else if (ADMUX == 0x41) {        // A1 center sensor
     centerSensor = ADC;
-
-  else if (ADMUX == 0x42)         // A2 right sensor
+    ADMUX = 0x42;
+  } else if (ADMUX == 0x42) {        // A2 right sensor
     rightSensor = ADC;
+    ADMUX = 0x40;
+  }
 
-  ADCSRA |= 0x40;               // start a new conversion
-}
+  ADCSRA |= 0x40;                    // start a new conversion
+}   
