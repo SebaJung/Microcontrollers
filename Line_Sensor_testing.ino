@@ -23,7 +23,7 @@
   D10:
   D11: Right Reverse PWM - OC2A
   D12: Left Wheel Encoder
-  D13: Trigger pin
+  D13:
 */
 
 void setup() {
@@ -55,7 +55,7 @@ void setup() {
 
   sei();                            // sets the interrupt enable flag on SREG
 
-  Serial.begin(9600);               // serial monitor start up command w baud rate of 9600
+  PORTD |= 0x90;                    // enables the motor control
 }
 
 volatile unsigned char button = 0;
@@ -67,28 +67,12 @@ volatile unsigned int rightSensor = 0;
 
 
 void loop() {
-  PORTD |= 0x90;                    // enables the motor control
+
 
   unsigned int avgCount = average(leftWheel, rightWheel);    // average value of the toggles between both the wheels
   unsigned long distance = (avgCount * 105L) / 100;
-  /*
-    Serial.print(avgCount);
-    Serial.print('\t');
-    Serial.print(leftWheel);
-    Serial.print('\t');
-    Serial.print(rightWheel);
-    Serial.print('\t');
-    Serial.print(distance);
-    Serial.print('\n');
-  */
-  /*
-    Black tape  >= 900
-    white bkgnd <= 800 ---> left sensor
-
-  */
-
+  
   //section below relating to line sensor:
-
   if (centerSensor >= 900) {
     OCR0A = 0;
     OCR0B = 200;                      // sends the left motor forward
@@ -106,11 +90,7 @@ void loop() {
     OCR0B = 0;
     OCR2A = 0;                    
     OCR2B = 150;
-
-   Serial.write("RIGHT");
-   Serial.print('\t');
   }
-
   if ((distance >= 1900) && (centerSensor < 900)) {
     OCR0B = 0;
     OCR0A = 0;
@@ -118,30 +98,25 @@ void loop() {
     OCR2A = 0;
     
   }
-  Serial.print(leftSensor);
-  Serial.print('\t');
-  Serial.print(centerSensor);
-  Serial.print('\t');
-  Serial.print(rightSensor);
-  Serial.print('\t');
-  Serial.print(distance);
-  Serial.print('\n');
 }
 
-// Do we want to use a circular buffer?
+
 unsigned int average(unsigned int leftWheel, unsigned int rightWheel) {
   return ((leftWheel + rightWheel) / 2);
 }
+
 
 ISR(PCINT0_vect) {                // left wheel encoder
   if ((button = PINB & 0x10) == 0)
     leftWheel++;
 }
 
+
 ISR(INT0_vect) {                  // right wheel encoder
   if ((button = PIND & 0x04) == 0)
     rightWheel++;
 }
+
 
 ISR(ADC_vect) {
   /* Depending on which ADMUX value is set, it
