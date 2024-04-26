@@ -79,7 +79,7 @@ void loop() {
       OCR2B = 200;                      // sends the right motor forward
 
     } else if ((leftSensor - 190) > rightSensor) {     // if left sensor detects...
-      OCR0A = 100;                       // left reverse signal
+      OCR0A = 80;                       // left reverse signal
       OCR0B = 0;
       OCR2A = 0;
       OCR2B = 150;                       // right forward signal
@@ -88,7 +88,7 @@ void loop() {
       OCR0A = 0;
       OCR0B = 150;                       // left forward signal
       OCR2B = 0;
-      OCR2A = 100;                       // right reverse signal
+      OCR2A = 80;                       // right reverse signal
     }
   }
   else if (distance >= 900) {
