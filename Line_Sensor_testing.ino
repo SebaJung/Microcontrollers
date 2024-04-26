@@ -8,8 +8,8 @@
   A1: Center Line Sensor
   A2: Right Line Sensor
   A3:
-  A4: Right whisker
-  A5: Left whisker
+  A4: 
+  A5: 
   D0:
   D1:
   D2: Right Wheel Encoder
@@ -90,24 +90,26 @@ void loop() {
 
   //section below relating to line sensor:
 
-  if (centerSensor >= 750) {
-    //goForward function
+  if (centerSensor >= 900) {
     OCR0A = 0;
-    OCR0B = 250;                      // sends the left motor forward
+    OCR0B = 200;                      // sends the left motor forward
     OCR2A = 0;
-    OCR2B = 250;                      // sends the right motor forward
+    OCR2B = 200;                      // sends the right motor forward
   }
-  else if (rightSensor > (leftSensor - 190)) {
-    OCR0A = 0;                    //left reverse signal half speed of right
-    OCR0B = 180;
+  else if (rightSensor > (leftSensor - 0)) {
+    OCR0A = 0;                    
+    OCR0B = 150;      
     OCR2B = 0;
-    OCR2A = 150;
-  }
-  else if ((leftSensor - 190) > rightSensor) {
-    OCR0A = 150;
+    OCR2A = 80;                      //left reverse signal half speed of right
+  } 
+  else if ((leftSensor - 180) > rightSensor) {
+    OCR0A = 80;                      // right reverse signal half speed of left
     OCR0B = 0;
-    OCR2A = 0;                    // right reverse signal half speed of left
-    OCR2B = 180;
+    OCR2A = 0;                    
+    OCR2B = 150;
+
+   Serial.write("RIGHT");
+   Serial.print('\t');
   }
 
   if ((distance >= 1900) && (centerSensor < 900)) {
@@ -147,8 +149,7 @@ ISR(ADC_vect) {
       will store the value of that ADC register
       onto that sensor's variable
   */
-
-  if (ADMUX == 0x40) {         // A0 left sensor
+  if (ADMUX == 0x40) {               // A0 left sensor
     leftSensor = ADC;
     ADMUX = 0x41;
   } else if (ADMUX == 0x41) {        // A1 center sensor
@@ -159,5 +160,5 @@ ISR(ADC_vect) {
     ADMUX = 0x40;
   }
 
-  ADCSRA |= 0x40;               // start a new conversion
-}
+  ADCSRA |= 0x40;                    // start a new conversion
+}   
