@@ -59,7 +59,6 @@ void setup() {
 }
 
 volatile unsigned char button = 0;
-volatile unsigned char middle = 0;
 volatile unsigned int leftWheel = 0;
 volatile unsigned int rightWheel = 0;
 volatile unsigned int leftSensor = 0;
