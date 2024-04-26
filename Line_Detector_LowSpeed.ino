@@ -54,7 +54,7 @@ void setup() {
   EIMSK = 0x01;                     // enables interrupts on D2
 
   sei();                            // sets the interrupt enable flag on SREG
-
+  PORTD |= 0x90;                    // enables the motor control
   Serial.begin(9600);               // serial monitor start up command w baud rate of 9600
 }
 
@@ -67,7 +67,6 @@ volatile unsigned int rightSensor = 0;
 
 
 void loop() {
-  PORTD |= 0x90;                    // enables the motor control
 
   unsigned int avgCount = average(leftWheel, rightWheel);    // average value of the toggles between both the wheels
   unsigned int distance = (avgCount * 105L) / 100;
