@@ -8,8 +8,8 @@
   A1: Center Line Sensor
   A2: Right Line Sensor
   A3:
-  A4: Right whisker
-  A5: Left whisker
+  A4:
+  A5:
   D0:
   D1:
   D2: Right Wheel Encoder
@@ -23,7 +23,7 @@
   D10:
   D11: Right Reverse PWM - OC2A
   D12: Left Wheel Encoder
-  D13: Trigger pin
+  D13:
 */
 
 void setup() {
@@ -71,72 +71,51 @@ void loop() {
 
   unsigned int avgCount = average(leftWheel, rightWheel);    // average value of the toggles between both the wheels
   unsigned int distance = (avgCount * 105L) / 100;
+
+  //section below relating to line sensor:
+
+  if (centerSensor >= 750) {                       // if center detects...
+    OCR0A = 0;
+    OCR0B = 150;                      // sends the left motor forward
+    OCR2A = 0;
+    OCR2B = 150;                      // sends the right motor forward
+
+  } else if ((leftSensor - 190) > rightSensor) {     // if left sensor detects...
+    OCR0A = 0;                       // left reverse signal
+    OCR0B = 0;
+    OCR2A = 0;
+    OCR2B = 150;                       // right forward signal
+
+  } else if (rightSensor > (leftSensor - 190)) {     // if right sensor detects...
+    OCR0A = 0;
+    OCR0B = 150;                       // left forward signal
+    OCR2B = 0;
+    OCR2A = 0;                       // right reverse signal
+  }
+
+  if ((centerSensor < 900) && (distance >= 1800)) {   // STOPPP MOVINGGG...
+    OCR0B = 0;
+    OCR0A = 0;
+    OCR2A = 0;
+    OCR2B = 0;
+  }
   /*
-    Serial.print(avgCount);
+    Serial.print(leftSensor);
     Serial.print('\t');
-    Serial.print(leftWheel);
+    Serial.print(centerSensor);
     Serial.print('\t');
-    Serial.print(rightWheel);
+    Serial.print(rightSensor);
     Serial.print('\t');
     Serial.print(distance);
     Serial.print('\n');
   */
-
-  //section below relating to line sensor:
-
-  if ((centerSensor >= 800) && (((leftSensor < 700) || (rightSensor < 700)) || (distance < 1800))) {
-
-    goForward();
-
-    if ((leftSensor >= 700) && (rightSensor < 700))
-      leftDetect();                   // Increase speed of left wheel(or reduce speed of right wheel)
-    // to encourage the car to yaw right OCR0B = 200 or OCR2B = 100
-
-    else if ((leftSensor < 700) && (rightSensor >= 700))
-      rightDetect();                  // Increase speed of right wheel(or reduce speed of left wheel)
-    // to encourage the car to yaw left OCR2B = 200 or OCR0B = 100
-  }
-  else if ((centerSensor < 800) && (distance >= 1800) && (leftSensor < 700) && (rightSensor < 700)) {
-    OCR0B = 0;
-    OCR2B = 0;
-  }
-
-  Serial.print(leftSensor);
-  Serial.print('\t');
-  Serial.print(centerSensor);
-  Serial.print('\t');
-  Serial.print(rightSensor);
-  Serial.print('\t');
-  Serial.print(distance);
-  Serial.print('\n');
 }
 
-// Do we want to use a circular buffer?
+
 unsigned int average(unsigned int leftWheel, unsigned int rightWheel) {
   return ((leftWheel + rightWheel) / 2);
 }
 
-void goForward() {                  // if nothing is hit...
-  OCR0A = 0;
-  OCR0B = 150;                      // sends the left motor forward
-  OCR2A = 0;
-  OCR2B = 150;                      // sends the right motor forward
-}
-
-void leftDetect() {             // if left sensor off tape...
-  OCR0A = 0;
-  OCR0B = 0;
-  OCR2A = 0;                    // right reverse signal half speed of left
-  OCR2B = 150;
-}
-
-void rightDetect() {            // if left bumper is hit...
-
-  OCR0A = 0;                    //left reverse signal half speed of right
-  OCR0B = 150;
-  OCR2B = 0;
-  OCR2A = 0;                  // right reverse signal
-}
 
 ISR(PCINT0_vect) {                // left wheel encoder
   if ((button = PINB & 0x10) == 0)
@@ -154,7 +133,7 @@ ISR(ADC_vect) {
       onto that sensor's variable
   */
 
-  if (ADMUX == 0x40) {         // A0 left sensor
+  if (ADMUX == 0x40) {               // A0 left sensor
     leftSensor = ADC;
     ADMUX = 0x41;
   } else if (ADMUX == 0x41) {        // A1 center sensor
@@ -164,7 +143,6 @@ ISR(ADC_vect) {
     rightSensor = ADC;
     ADMUX = 0x40;
   }
-
 
   ADCSRA |= 0x40;               // start a new conversion
 }
