@@ -33,6 +33,7 @@ volatile unsigned int leftWheel = 0;
 volatile unsigned int rightWheel = 0;
 
 volatile unsigned char middle = 0;
+volatile unsigned char sregValue;
 
 void setup() {
   DDRD = 0xF8;            // output pin for the PWM signals of motor control, input for right encoder
@@ -135,6 +136,7 @@ unsigned int average(unsigned int leftWheel, unsigned int rightWheel) {
 
 ISR(TIMER1_CAPT_vect)                 // INPUT CAPTURE INTERRUPT
 {
+  sregValue = SREG;
   static unsigned char x = 0;         // variable used to change between conditions
   if (!x) {                           // if x is not equal to its value
     capt[1] = count + ICR1;
@@ -145,29 +147,37 @@ ISR(TIMER1_CAPT_vect)                 // INPUT CAPTURE INTERRUPT
     TCCR1B &= 0xBF;                   // clears the ICES1 bit and captures input on falling edge
   }
   x ^= 1;                             // toggling x to change the condition of the statement
+  SREG = sregValue;
 }
 
 
 ISR(TIMER1_OVF_vect)          // keeps running total of the ticks elasped even after overflow
 {
+  sregValue = SREG;
   count += 65536;
+  SREG = sregValue;
 }
 
 
 ISR(PCINT0_vect) {                // LEFT WHEEL ENCODER INTERRUPT
+  sregValue = SREG;
   if ((PINB & 0x10) == 0)
     leftWheel++;
+  SREG = sregValue;
 }
 
 
 ISR(INT0_vect) {                  // RIGHT WHEEL ENCODER INTERRUPT
+  sregValue = SREG;
   if ((PIND & 0x04) == 0)
     rightWheel++;
+  SREG = sregValue;
 }
 
 
 ISR(PCINT1_vect)                  // INTERRUPT FOR THE WHISKERS
 {
+  sregValue = SREG;
   _delay_ms(50);                   // allows for the data to register first and then it can be read
   if ((PINC & 0x30) == 0x00)       // nothing hit
     middle = 0;
@@ -177,4 +187,5 @@ ISR(PCINT1_vect)                  // INTERRUPT FOR THE WHISKERS
     middle = 2;
   else  // both hit
     middle = 3;
+  SREG = sregValue;
 }
