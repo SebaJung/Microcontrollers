@@ -38,6 +38,9 @@ volatile unsigned char sregValue;
 void setup(){
   DDRD = 0xF8;            				// output pin for the PWM signals of motor control, input for right encoder
   DDRB = 0x28;            				// output pin for the PWM signals of motor control, input for left encoder
+  
+  PORTB |= 0x10;                    // enables internal pull-up on left encoder
+  PORTD |= 0x04;                    // enables internal pull-up on right encoder
 
   cli();                  				// clears the interrupt enable on SREG
 
