@@ -2,7 +2,7 @@
   Using whiskers and a single ultrasonic sensor
   By: Carlos, John, Sebastian
   Written: May 3, 2024
-  Edited: May 3, 2024
+  Edited: May 4, 2024
   I/O Pins
   A0:
   A1:
@@ -19,7 +19,7 @@
   D6:  Left Reverse PWM - OC0A
   D7:  Right Motor Control
   D8:  ICU from ultrasonic sensor
-  D9:  Ultrasonic Trig
+  D9:  
   D10: 
   D11: Right Reverse PWM - OC2A
   D12: Left Wheel Encoder
@@ -38,9 +38,9 @@ volatile unsigned char sregValue;
 void setup(){
   DDRD = 0xF8;            				// output pin for the PWM signals of motor control, input for right encoder
   DDRB = 0x28;            				// output pin for the PWM signals of motor control, input for left encoder
-  
-  PORTB |= 0x10;                    // enables internal pull-up on left encoder
-  PORTD |= 0x04;                    // enables internal pull-up on right encoder
+
+  PORTB |= 0x10;                  // enables internal pull-up on left encoder
+  PORTD |= 0x04;                  // enables internal pull-up on right encoder
 
   cli();                  				// clears the interrupt enable on SREG
 
@@ -91,8 +91,12 @@ void loop(){
   unsigned int avgCountWheel = average(leftWheel, rightWheel);      // average value of the toggles between both the wheels
   unsigned int wheelDistance = (avgCountWheel * 105L) / 100;
 
-  if(ultraDistance <= 15)
-    spinThatShit();
+  if((ultraDistance < 15) || (115 < wheelDistance <= 345)){
+    middle = 3;
+  }
+  else if((ultraDistance > 15) && (115 > wheelDistance >= 345)){
+    middle = 0;
+  }
   
   switch (middle) {
     case (0):                   	  // go the fuck forwards
@@ -113,18 +117,17 @@ void loop(){
       OCR2A = 150;
       OCR2B = 0;
       break;
+    case (3):                       // SPIN THAT SHIT pt 2 electric boogaloo
+      OCR0A = 150;
+      OCR0B = 0;
+      OCR2A = 0;
+      OCR2B = 150;
+      break;
   }
   Serial.print(ultraDistance);
   Serial.print('\t');
   Serial.print(wheelDistance);
   Serial.print('\n');
-}
-
-void spinThatShit(){
-  OCR0A = 150;
-  OCR0B = 0;
-  OCR2A = 0;
-  OCR2B = 150;
 }
 
 unsigned int average(unsigned int leftWheel, unsigned int rightWheel){
