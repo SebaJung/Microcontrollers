@@ -90,13 +90,13 @@ void loop(){
   unsigned int ultraDistance = (tHigh * 17182L) / 1000000;     // gets the whole number of distance
   unsigned int avgCountWheel = average(leftWheel, rightWheel);      // average value of the toggles between both the wheels
   unsigned int wheelDistance = (avgCountWheel * 105L) / 100;
+  unsigned int wheelBack = wheelDistance + 125;
 
-  if((ultraDistance < 15) || (115 < wheelDistance <= 345)){
+  if(ultraDistance <= 15){          // If car is 15cm from obstacle, turn
     middle = 3;
   }
-  else if((ultraDistance > 15) && (115 > wheelDistance >= 345)){
+  else
     middle = 0;
-  }
   
   switch (middle) {
     case (0):                   	  // go the fuck forwards
@@ -106,16 +106,20 @@ void loop(){
       OCR2B = 150;
       break;
     case (1):                       // right whisker is hit
-      OCR0A = 150;
-      OCR0B = 0;
-      OCR2A = 100;
-      OCR2B = 0;
+      while(wheelDistance < wheelBack){
+        OCR0A = 0;
+        OCR0B = 150;
+        OCR2A = 0;
+        OCR2B = 100;
+      }
       break;
     case (2):                       // left whisker is hit
-      OCR0A = 100;
-      OCR0B = 0;
-      OCR2A = 150;
-      OCR2B = 0;
+      while(wheelDistance < wheelBack){
+        OCR0A = 100;
+        OCR0B = 0;
+        OCR2A = 150;
+        OCR2B = 0;
+      }
       break;
     case (3):                       // SPIN THAT SHIT pt 2 electric boogaloo
       OCR0A = 150;
