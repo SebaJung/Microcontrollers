@@ -19,8 +19,8 @@
   D6:  Left Reverse PWM - OC0A
   D7:  Right Motor Control
   D8:  ICU from ultrasonic sensor
-  D9:  
-  D10: 
+  D9:
+  D10:
   D11: Right Reverse PWM - OC2A
   D12: Left Wheel Encoder
   D13: TRIGGER PIN
@@ -31,13 +31,12 @@ volatile unsigned long captArr[2];
 
 volatile unsigned int  leftWheel = 0;
 volatile unsigned int  rightWheel = 0;
-volatile unsigned int  ultraGlobal;
-volatile unsigned int  wheelGlobal;
+volatile unsigned int  wheelGlobal = 0;
 
 volatile unsigned char middle = 0;
 volatile unsigned char sregValue;
 
-void setup(){
+void setup() {
   DDRD = 0xF8;                    // output pin for the PWM signals of motor control, input for right encoder
   DDRB = 0x28;                    // output pin for the PWM signals of motor control, input for left encoder
 
@@ -64,16 +63,16 @@ void setup(){
 
   EICRA  = 0x01;                  // pin D2 and triggers on value change
   EIMSK  = 0x01;                  // enables interrupts on D2 (right encoder)
-  
+
   // WDT config for ammendment
 
   sei();                          // sets the interrupt enable on SREG
-  
+
   PORTD |= 0x90;                  // enables the motor control
   Serial.begin(9600);
 }
 
-void loop(){
+void loop() {
 
   PORTB |= 0x20;                        // send a 10 us pulse from the trigger pin D13
   _delay_us(10);
@@ -89,93 +88,90 @@ void loop(){
   }
   sei();
 
-  unsigned int  ultraDistance = (tHigh * 17182L) / 1000000;     // gets the whole number of distance
-  ultraGlobal = ultraDistance;
-  unsigned int  wheelDistance = ((average(leftWheel, rightWheel)) * 105L) / 100;
-  wheelGlobal = wheelDistance;
-  unsigned int  wheelBack = wheelDistance + 125;
-  unsigned char turnCount = 0;
+  unsigned int ultraDistance = (tHigh * 17182L) / 1000000;     // gets the whole number of distance
+  unsigned int wheelDistance = ((average(leftWheel, rightWheel)) * 105L) / 100;
+  unsigned long wheelGlobal = wheelDistance + 50;
+  static unsigned char x = 1;
 
-  
-  if(ultraDistance <= 15){          // If car is 15cm from obstacle, turn
+  if (ultraDistance <= 15) {       // If car is 15cm from obstacle, turn
     middle = 3;
-  }
-  else if(middle == 1){          // If car is 15cm from obstacle, turn
-    OCR0A = 0;
-    OCR0B = 185;
-    OCR2A = 150;
-    OCR2B = 0;
-  }
-  else if(middle == 2){
-    OCR0A = 0;
-    OCR0B = 185;
-    OCR2A = 150;
-    OCR2B = 0;
-  }
-  else
+  } else if ((ultraDistance > 15) && (middle == 1)) {      // right whisker hit
+    middle = 1;
+  } else if ((ultraDistance > 15) && (middle == 2)) {        // left whisker hit
+    middle = 2;
+  } else
     middle = 0;
 
   switch (middle) {
     case (0):                       // go the fuck forwards
       OCR0A = 0;
-      OCR0B = 205;
+      OCR0B = 160;
       OCR2A = 0;
-      OCR2B = 170;
+      OCR2B = 150;
       break;
     case (1):                       // right whisker is hit
-      OCR0A = 250;
-      OCR0B = 0;
-      OCR2A = 150;
-      OCR2B = 0;
-      _delay_ms(100);
-      OCR0A = 250;
-      OCR0B = 0;
-      OCR2A = 215;
-      OCR2B = 120;
-      //middle = 0;
-      Serial.println("go fuck yourself to the left");
+      while (wheelDistance < wheelGlobal) {
+        OCR0A = 155;
+        OCR0B = 0;
+        OCR2A = 100;
+        OCR2B = 0;
+        wheelDistance ++;
+        Serial.print(wheelDistance);
+        Serial.print('\t');
+        Serial.println(wheelDistance);
+      }
+      x ^= 1;
       break;
     case (2):                       // left whisker is hit
-      OCR0A = 180;
-      OCR0B = 0;
-      OCR2A = 215;
-      OCR2B = 0;
-      _delay_ms(150);
-      OCR0A = 0;
-      OCR0B = 155;
-      OCR2A = 215;
-      OCR2B = 0;
-      //middle = 0;
-      Serial.println("go fuck yourself to the right");
+      while (wheelDistance < wheelGlobal) {
+        OCR0A = 100;
+        OCR0B = 0;
+        OCR2A = 155;
+        OCR2B = 0;
+        wheelDistance ++;
+        Serial.print(wheelDistance);
+        Serial.print('\t');
+        Serial.println(wheelDistance);
+      }
+      x ^= 1;
       break;
     case (3):
-      cornerClear();
+      while (wheelDistance < (wheelGlobal + 50)) {
+        cornerClear(x);
+        wheelDistance++;
+      }
+      break;
   }
-  
-  Serial.print(ultraDistance);
-  Serial.print('\t');
-  Serial.print(wheelDistance);
-  Serial.print('\n');
+  /*
+    Serial.print('\t');
+    Serial.print(ultraDistance);
+
+    Serial.print(wheelDistance);
+    Serial.print('\n');
+  */
 }
 
-void cornerClear(){
-  cli();
-  unsigned int postLeft = (wheelGlobal + 63);
-  do{
+void cornerClear(unsigned char x) {
+  Serial.println(x);
+  if (x) {
     OCR0A = 0;
     OCR0B = 195;
-    OCR2A = 150;
+    OCR2A = 190;
     OCR2B = 0;
-    wheelGlobal++;
-    }while(postLeft >= wheelGlobal);
-  sei();
+  } else {
+    OCR0A = 195;
+    OCR0B = 0;
+    OCR2A = 0;
+    OCR2B = 190;
+  }
+
 }
 
-unsigned int average(unsigned int leftWheel, unsigned int rightWheel){
+unsigned int average(unsigned int leftWheel, unsigned int rightWheel) {
   return ((leftWheel + rightWheel) / 2);
 }
 
-ISR(TIMER1_CAPT_vect){                // INPUT CAPTURE INTERRUPT
+ISR(TIMER1_CAPT_vect) {               // INPUT CAPTURE INTERRUPT
   static unsigned char x = 0;         // variable used to change between conditions
   sregValue = SREG;
   if (!x) {                           // if x is not equal to its value
@@ -190,25 +186,25 @@ ISR(TIMER1_CAPT_vect){                // INPUT CAPTURE INTERRUPT
   SREG = sregValue;
 }
 
-ISR(TIMER1_OVF_vect){                 // keeps running total of the ticks elasped even after overflow
+ISR(TIMER1_OVF_vect) {                // keeps running total of the ticks elasped even after overflow
   count += 65536;
 }
 
-ISR(PCINT0_vect){                     // LEFT WHEEL ENCODER INTERRUPT
+ISR(PCINT0_vect) {                    // LEFT WHEEL ENCODER INTERRUPT
   sregValue = SREG;
   if ((PINB & 0x10) == 0)
     leftWheel++;
   SREG = sregValue;
 }
 
-ISR(INT0_vect){                       // RIGHT WHEEL ENCODER INTERRUPT
+ISR(INT0_vect) {                      // RIGHT WHEEL ENCODER INTERRUPT
   sregValue = SREG;
   if ((PIND & 0x04) == 0)
     rightWheel++;
   SREG = sregValue;
 }
 
-ISR(PCINT1_vect){                     // INTERRUPT FOR THE WHISKERS
+ISR(PCINT1_vect) {                    // INTERRUPT FOR THE WHISKERS
   sregValue = SREG;
   if ((PINC & 0x30) == 0x20)          // left hit
     middle = 2;
