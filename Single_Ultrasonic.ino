@@ -97,7 +97,7 @@ void loop(){
 
   
   if(ultraDistance <= 15){          // If car is 15cm from obstacle, turn
-    cornerClear();
+    middle = 3;
   }
   else if(middle == 1){          // If car is 15cm from obstacle, turn
     OCR0A = 0;
@@ -123,18 +123,24 @@ void loop(){
       break;
     case (1):                       // right whisker is hit
       OCR0A = 0;
-      OCR0B = 185;
-      OCR2A = 150;
+      OCR0B = 205;
+      OCR2A = 170;
       OCR2B = 0;
+      _delay_ms(300);
+      //middle = 0;
       Serial.println("go fuck yourself to the left");
       break;
     case (2):                       // left whisker is hit
-      OCR0A = 185;
+      OCR0A = 175;
       OCR0B = 0;
-      OCR2A = 150;
+      OCR2A = 205;
       OCR2B = 0;
+      _delay_ms(300);
+      //middle = 0;
       Serial.println("go fuck yourself to the right");
       break;
+    case (3):
+      cornerClear();
   }
   
   Serial.print(ultraDistance);
@@ -145,10 +151,14 @@ void loop(){
 
 void cornerClear(){
   cli();
-  OCR0A = 0;
-  OCR0B = 195;
-  OCR2A = 150;
-  OCR2B = 0;
+  unsigned int postLeft = (wheelGlobal + 63);
+  do{
+    OCR0A = 0;
+    OCR0B = 195;
+    OCR2A = 150;
+    OCR2B = 0;
+    wheelGlobal++;
+    }while(postLeft >= wheelGlobal);
   sei();
 }
 
