@@ -64,8 +64,6 @@ void setup() {
   EICRA  = 0x01;                  // pin D2 and triggers on value change
   EIMSK  = 0x01;                  // enables interrupts on D2 (right encoder)
 
-  // WDT config for ammendment
-
   sei();                          // sets the interrupt enable on SREG
 
   PORTD |= 0x90;                  // enables the motor control
@@ -74,32 +72,32 @@ void setup() {
 
 void loop() {
 
-  PORTB |= 0x20;                        // send a 10 us pulse from the trigger pin D13
+  PORTB |= 0x20;                              // send a 10 us pulse from the trigger pin D13
   _delay_us(10);
-  PORTB &= 0xDF;                        // turns it off after 10 us
+  PORTB &= 0xDF;                              // turns it off after 10 us
 
-  unsigned long ticksBetween = 0;       // declare variables for the periods
-  static unsigned long tHigh = 0;
+  unsigned long ticksBetween = 0;             // declare variables for the periods
+  static unsigned long tHigh = 0;             // declared static so that the value does not get reinitialized to zero
 
   cli();
-  if (captArr[1] > captArr[0]) {        // calculates the period high and stores it in tHigh
+  if (captArr[1] > captArr[0]) {                                                        // calculates the period high and stores it in tHigh
     ticksBetween = captArr[1] - captArr[0];
-    tHigh = (ticksBetween << 4);        // bitshifting multiplies by 16 bc of I/O prescaler
+    tHigh = (ticksBetween << 4);                                                        // bitshifting multiplies by 16 bc of I/O prescaler
   }
   sei();
 
-  unsigned int ultraDistance = (tHigh * 17182L) / 1000000;     // gets the whole number of distance
-  unsigned int wheelDistance = ((average(leftWheel, rightWheel)) * 105L) / 100;
-  unsigned long wheelGlobal = wheelDistance + 50;
-  static unsigned char x = 1;
+  unsigned int ultraDistance = (tHigh * 17182L) / 1000000;                              // gets the whole number of distance
+  unsigned int wheelDistance = ((average(leftWheel, rightWheel)) * 105L) / 100;         // equation to calculate the toggles of the wheel revolution 
+  unsigned long wheelGlobal = wheelDistance + 100;                                      // the baseline value to make the car turn a certain distance 
+  static unsigned char x = 1;                                                           // initially sets the x variable to 1 and is used to vchange the direction of sharp turns 
 
-  if (ultraDistance <= 15) {       // If car is 15cm from obstacle, turn
+  if (ultraDistance <= 15) {                                     // If car is 15cm from obstacle..
     middle = 3;
-  } else if ((ultraDistance > 15) && (middle == 1)) {      // right whisker hit
+  } else if ((ultraDistance > 15) && (middle == 1)) {            // right whisker hit condition stays high
     middle = 1;
-  } else if ((ultraDistance > 15) && (middle == 2)) {        // left whisker hit
+  } else if ((ultraDistance > 15) && (middle == 2)) {            // left whisker hit condition stays high
     middle = 2;
-  } else
+  } else                                                         // otherwise, nothing is affecting the car
     middle = 0;
 
   switch (middle) {
@@ -111,9 +109,9 @@ void loop() {
       break;
     case (1):                       // right whisker is hit
       while (wheelDistance < wheelGlobal) {
-        OCR0A = 155;
+        OCR0A = 150;               // left reverse signal 
         OCR0B = 0;
-        OCR2A = 100;
+        OCR2A = 0;                 // right reverse signal
         OCR2B = 0;
         wheelDistance ++;
         Serial.print(wheelDistance);
@@ -124,9 +122,9 @@ void loop() {
       break;
     case (2):                       // left whisker is hit
       while (wheelDistance < wheelGlobal) {
-        OCR0A = 100;
+        OCR0A = 0;                  // left reverse signal
         OCR0B = 0;
-        OCR2A = 155;
+        OCR2A = 150;                //right reverse signal
         OCR2B = 0;
         wheelDistance ++;
         Serial.print(wheelDistance);
@@ -164,7 +162,6 @@ void cornerClear(unsigned char x) {
     OCR2A = 0;
     OCR2B = 190;
   }
-
 }
 
 unsigned int average(unsigned int leftWheel, unsigned int rightWheel) {
