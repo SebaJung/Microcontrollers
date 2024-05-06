@@ -89,11 +89,12 @@ void loop(){
   }
   sei();
 
-  unsigned int ultraDistance = (tHigh * 17182L) / 1000000;     // gets the whole number of distance
+  unsigned int  ultraDistance = (tHigh * 17182L) / 1000000;     // gets the whole number of distance
   ultraGlobal = ultraDistance;
-  unsigned int wheelDistance = ((average(leftWheel, rightWheel)) * 105L) / 100;
+  unsigned int  wheelDistance = ((average(leftWheel, rightWheel)) * 105L) / 100;
   wheelGlobal = wheelDistance;
-  unsigned int wheelBack = wheelDistance + 125;
+  unsigned int  wheelBack = wheelDistance + 125;
+  unsigned char turnCount = 0;
 
   
   if(ultraDistance <= 15){          // If car is 15cm from obstacle, turn
@@ -122,20 +123,28 @@ void loop(){
       OCR2B = 170;
       break;
     case (1):                       // right whisker is hit
-      OCR0A = 0;
-      OCR0B = 205;
-      OCR2A = 170;
+      OCR0A = 250;
+      OCR0B = 0;
+      OCR2A = 150;
       OCR2B = 0;
-      _delay_ms(300);
+      _delay_ms(100);
+      OCR0A = 250;
+      OCR0B = 0;
+      OCR2A = 215;
+      OCR2B = 120;
       //middle = 0;
       Serial.println("go fuck yourself to the left");
       break;
     case (2):                       // left whisker is hit
-      OCR0A = 175;
+      OCR0A = 180;
       OCR0B = 0;
-      OCR2A = 205;
+      OCR2A = 215;
       OCR2B = 0;
-      _delay_ms(300);
+      _delay_ms(150);
+      OCR0A = 0;
+      OCR0B = 155;
+      OCR2A = 215;
+      OCR2B = 0;
       //middle = 0;
       Serial.println("go fuck yourself to the right");
       break;
