@@ -2,7 +2,7 @@
   Using whiskers and a single ultrasonic sensor
   By: Carlos, John, Sebastian
   Written: May 3, 2024
-  Edited: May 4, 2024
+  Edited: May 5, 2024
   I/O Pins
   A0:
   A1:
@@ -13,7 +13,7 @@
   D0:
   D1:
   D2:  Right Wheel Encoder
-  D3:  Right Forward PWM - OCR2B
+  D3:  Right Forward PWM - OC2B
   D4:  Left Motor Control
   D5:  Left Forward PWM - OC0B
   D6:  Left Reverse PWM - OC0A
@@ -31,43 +31,45 @@ volatile unsigned long captArr[2];
 
 volatile unsigned int  leftWheel = 0;
 volatile unsigned int  rightWheel = 0;
+volatile unsigned int  ultraGlobal;
+volatile unsigned int  wheelGlobal;
 
 volatile unsigned char middle = 0;
 volatile unsigned char sregValue;
 
 void setup(){
-  DDRD = 0xF8;            				// output pin for the PWM signals of motor control, input for right encoder
-  DDRB = 0x28;            				// output pin for the PWM signals of motor control, input for left encoder
+  DDRD = 0xF8;                    // output pin for the PWM signals of motor control, input for right encoder
+  DDRB = 0x28;                    // output pin for the PWM signals of motor control, input for left encoder
 
   PORTB |= 0x10;                  // enables internal pull-up on left encoder
   PORTD |= 0x04;                  // enables internal pull-up on right encoder
 
-  cli();                  				// clears the interrupt enable on SREG
+  cli();                          // clears the interrupt enable on SREG
 
-  TCCR0A = 0xA1;         				  // Using phase-correct PWM, clear on A, clear on B
-  TCCR0B = 0x01;          				// with prescale value of 1
-  TIMSK0 = 0x00;          				// Disable interrupt on compare match A & B
+  TCCR0A = 0xA1;                  // Using phase-correct PWM, clear on A, clear on B
+  TCCR0B = 0x01;                  // with prescale value of 1
+  TIMSK0 = 0x00;                  // Disable interrupt on compare match A & B
 
-  TCCR1A = 0x00;          				// configure input capture unit register
-  TCCR1B = 0xC4;          				// normal mode for everything
-  TIMSK1 = 0x21;          				// input capture enabled w/ prescale of 256
+  TCCR1A = 0x00;                  // configure input capture unit register
+  TCCR1B = 0xC4;                  // normal mode for everything
+  TIMSK1 = 0x21;                  // input capture enabled w/ prescale of 256
 
-  TCCR2A = 0xA1;          				// Using phase-correct PWM, clear on A, clear on B
-  TCCR2B = 0x01;          				// with prescale value of 1
-  TIMSK2 = 0x00;          				// Disable interrupt on compare match A & B
+  TCCR2A = 0xA1;                  // Using phase-correct PWM, clear on A, clear on B
+  TCCR2B = 0x01;                  // with prescale value of 1
+  TIMSK2 = 0x00;                  // Disable interrupt on compare match A & B
 
-  PCICR  = 0x03;           				// activates the pin change interrupt on port B
-  PCMSK0 = 0x10;          				// port C and enables interrupts (left encoder)
-  PCMSK1 = 0x30;          				// changes pins A4 and A5
+  PCICR  = 0x03;                  // activates the pin change interrupt on port B
+  PCMSK0 = 0x10;                  // port C and enables interrupts (left encoder)
+  PCMSK1 = 0x30;                  // changes pins A4 and A5
 
-  EICRA  = 0x01;           				// pin D2 and triggers on value change
-  EIMSK  = 0x01;           				// enables interrupts on D2 (right encoder)
+  EICRA  = 0x01;                  // pin D2 and triggers on value change
+  EIMSK  = 0x01;                  // enables interrupts on D2 (right encoder)
   
   // WDT config for ammendment
 
-  sei();                  				// sets the interrupt enable on SREG
+  sei();                          // sets the interrupt enable on SREG
   
-  PORTD |= 0x90;          				// enables the motor control
+  PORTD |= 0x90;                  // enables the motor control
   Serial.begin(9600);
 }
 
@@ -88,96 +90,112 @@ void loop(){
   sei();
 
   unsigned int ultraDistance = (tHigh * 17182L) / 1000000;     // gets the whole number of distance
-  unsigned int avgCountWheel = average(leftWheel, rightWheel);      // average value of the toggles between both the wheels
-  unsigned int wheelDistance = (avgCountWheel * 105L) / 100;
+  ultraGlobal = ultraDistance;
+  unsigned int wheelDistance = ((average(leftWheel, rightWheel)) * 105L) / 100;
+  wheelGlobal = wheelDistance;
   unsigned int wheelBack = wheelDistance + 125;
 
+  
   if(ultraDistance <= 15){          // If car is 15cm from obstacle, turn
-    middle = 3;
+    cornerClear();
+  }
+  else if(middle == 1){          // If car is 15cm from obstacle, turn
+    OCR0A = 0;
+    OCR0B = 185;
+    OCR2A = 150;
+    OCR2B = 0;
+  }
+  else if(middle == 2){
+    OCR0A = 0;
+    OCR0B = 185;
+    OCR2A = 150;
+    OCR2B = 0;
   }
   else
     middle = 0;
-  
+
   switch (middle) {
-    case (0):                   	  // go the fuck forwards
+    case (0):                       // go the fuck forwards
       OCR0A = 0;
-      OCR0B = 195;
+      OCR0B = 205;
       OCR2A = 0;
-      OCR2B = 150;
+      OCR2B = 170;
       break;
     case (1):                       // right whisker is hit
-      while(wheelDistance < wheelBack){
-        OCR0A = 0;
-        OCR0B = 150;
-        OCR2A = 0;
-        OCR2B = 100;
-      }
+      OCR0A = 0;
+      OCR0B = 185;
+      OCR2A = 150;
+      OCR2B = 0;
+      Serial.println("go fuck yourself to the left");
       break;
     case (2):                       // left whisker is hit
-      while(wheelDistance < wheelBack){
-        OCR0A = 100;
-        OCR0B = 0;
-        OCR2A = 150;
-        OCR2B = 0;
-      }
-      break;
-    case (3):                       // SPIN THAT SHIT pt 2 electric boogaloo
-      OCR0A = 150;
+      OCR0A = 185;
       OCR0B = 0;
-      OCR2A = 0;
-      OCR2B = 150;
+      OCR2A = 150;
+      OCR2B = 0;
+      Serial.println("go fuck yourself to the right");
       break;
   }
+  
   Serial.print(ultraDistance);
   Serial.print('\t');
   Serial.print(wheelDistance);
   Serial.print('\n');
 }
 
+void cornerClear(){
+  cli();
+  OCR0A = 0;
+  OCR0B = 195;
+  OCR2A = 150;
+  OCR2B = 0;
+  sei();
+}
+
 unsigned int average(unsigned int leftWheel, unsigned int rightWheel){
   return ((leftWheel + rightWheel) / 2);
 }
 
-ISR(TIMER1_CAPT_vect){              	// INPUT CAPTURE INTERRUPT
-  static unsigned char x = 0;       	// variable used to change between conditions
+ISR(TIMER1_CAPT_vect){                // INPUT CAPTURE INTERRUPT
+  static unsigned char x = 0;         // variable used to change between conditions
   sregValue = SREG;
-  if (!x) {                         	// if x is not equal to its value
+  if (!x) {                           // if x is not equal to its value
     captArr[0] = count + ICR1;
-    TCCR1B &= 0xBF;                 	// sets the ICES1 bit and captures input on rising edge
+    TCCR1B &= 0xBF;                   // sets the ICES1 bit and captures input on rising edge
   }
   else {
     captArr[1] = count + ICR1;
-    TCCR1B |= 0x40;                		// clears the ICES1 bit and captures input on falling edge
+    TCCR1B |= 0x40;                   // clears the ICES1 bit and captures input on falling edge
   }
-  x ^= 1;                           	// toggling x to change the condition of the statement
+  x ^= 1;                             // toggling x to change the condition of the statement
   SREG = sregValue;
 }
 
-ISR(TIMER1_OVF_vect){               	// keeps running total of the ticks elasped even after overflow
+ISR(TIMER1_OVF_vect){                 // keeps running total of the ticks elasped even after overflow
   count += 65536;
 }
 
-ISR(PCINT0_vect){                  		// LEFT WHEEL ENCODER INTERRUPT
-  //sregValue = SREG;
+ISR(PCINT0_vect){                     // LEFT WHEEL ENCODER INTERRUPT
+  sregValue = SREG;
   if ((PINB & 0x10) == 0)
     leftWheel++;
-  //SREG = sregValue;
+  SREG = sregValue;
 }
 
-ISR(INT0_vect){                    		// RIGHT WHEEL ENCODER INTERRUPT
-  //sregValue = SREG;
+ISR(INT0_vect){                       // RIGHT WHEEL ENCODER INTERRUPT
+  sregValue = SREG;
   if ((PIND & 0x04) == 0)
     rightWheel++;
-  //SREG = sregValue;
+  SREG = sregValue;
 }
 
-ISR(PCINT1_vect){                   	// INTERRUPT FOR THE WHISKERS
+ISR(PCINT1_vect){                     // INTERRUPT FOR THE WHISKERS
   sregValue = SREG;
-  if ((PINC & 0x30) == 0x20)        	// left hit
+  if ((PINC & 0x30) == 0x20)          // left hit
     middle = 2;
-  else if ((PINC & 0x30) == 0x10)   	// right hit
+  else if ((PINC & 0x30) == 0x10)     // right hit
     middle = 1;
-  else                              	// nothing hit
+  else                                // nothing hit
     middle = 0;
   SREG = sregValue;
 }
