@@ -77,22 +77,22 @@ void loop() {
   //section below relating to line sensor:
   if (centerSensor >= 900) {
     OCR0A = 0;
-    OCR0B = 250;                      // sends the left motor forward
+    OCR0B = 225;                      // sends the left motor forward
     OCR2A = 0;
-    OCR2B = 250;                      // sends the right motor forward
+    OCR2B = 225;                      // sends the right motor forward
   } else if (rightSensor > (leftSensor - 0)) {
     OCR0A = 0;
-    OCR0B = 150;
-    OCR2B = 0;
-    OCR2A = 80;                      //left reverse signal half speed of right
+    OCR0B = 200;
+    OCR2B = 80;
+    OCR2A = 0;                      //left reverse signal half speed of right
   } else if ((leftSensor - 180) > rightSensor) {
-    OCR0A = 80;                      // right reverse signal half speed of left
-    OCR0B = 0;
+    OCR0A = 0;                      // right reverse signal half speed of left
+    OCR0B = 80;
     OCR2A = 0;
-    OCR2B = 150;
+    OCR2B = 200;
   }
  
- if ((distance <= 1900 ) && (centerSensor < 900)) {     // set ammendity for three point turn
+ if ((distance >= 1900 ) && (centerSensor < 900)) {     // set ammendity for three point turn
     OCR0A = 0;
     OCR0B = 0;
     OCR2A = 0;
