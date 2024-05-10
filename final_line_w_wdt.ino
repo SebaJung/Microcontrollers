@@ -35,7 +35,6 @@ volatile unsigned int  rightWheel = 0;
 volatile unsigned int  leftSensor = 0;
 volatile unsigned int  centerSensor = 0;
 volatile unsigned int  rightSensor = 0;
-volatile unsigned long distance;
 
 void setup() {
 
@@ -63,35 +62,57 @@ void setup() {
   EICRA = 0x02;                     // pin D2 and triggers on falling edge
   EIMSK = 0x01;                     // enables interrupts on D2
 
-  WDTCSR = 0x18;                    // reset, change, and interrupt enabled
-  WDTCSR |= 0x0E;                   // trigger interrupt and reset after 1 second
+  WDTCSR |= 0x18;                   // reset and change enabled
+  WDTCSR = 0x0E;                    // reset after 1 second
 
   lcd_init();                       // lcd startup routine
   sei();                            // sets the interrupt enable flag on SREG
 
   PORTD |= 0x90;                    // enables the motor control
-  
-  if (centerSensor < 800) {
-    OCR0A = 0;
-    OCR0B = 100;
-    OCR2A = 100;
-    OCR2B = 0;
-  }
+
+  void wdtreset();                  // invokes the watchdog function
 }
 
 void loop() {
   lcd_clrscr();                   // clears the content of the screen
 
   unsigned int avgCount = average(leftWheel, rightWheel);    // average value of the toggles between both the wheels
-  distance = (avgCount * 105L) / 100;
-  lcd_puts("Odometer:");
+  unsigned long distance = (avgCount * 105L) / 100;
+
+  //section below relating to line sensor:
+  if (centerSensor >= 800) {
+    OCR0A = 0;
+    OCR0B = 220;                      // sends the left motor forward
+    OCR2A = 0;
+    OCR2B = 220;                      // sends the right motor forward
+  }
+  else if (rightSensor > 850)  {
+    OCR0A = 0;
+    OCR0B = 220;
+    OCR2B = 0;
+    OCR2A = 80;                      //left reverse signal half speed of right
+  } else if (leftSensor > 850) {
+    OCR0A = 80;                      // right reverse signal half speed of left
+    OCR0B = 0;
+    OCR2A = 0;
+    OCR2B = 220;
+  }
+  while (distance >= 4300) {         // turn "off" the car 
+    OCR0A = 0;
+    OCR0B = 0;
+    OCR2A = 0;
+    OCR2B = 0;
+  }                                 // theoretically, the car shouldve stopped here and the 
+  asm volatile("wdr");              // watchdog would stop being pet and invoke a reset
+
+  lcd_puts("Odometer:");            // displays the lcd screen
   char charbufferDistance[10];
   ltoa((distance / 10), charbufferDistance, 10);
   lcd_goto(0x0A);
   lcd_puts(charbufferDistance);
   lcd_puts(" cm");
 
-  _delay_ms(50);
+  _delay_ms(10);
 }
 
 unsigned int average(unsigned int leftWheel, unsigned int rightWheel) {
@@ -113,8 +134,7 @@ ISR(ADC_vect) {
       will store the value of that ADC register
       onto that sensor's variable
   */
-
-  //sregValue = SREG;
+  sregValue = SREG;
   if (ADMUX == 0x40) {               // A0 left sensor
     leftSensor = ADC;
     ADMUX = 0x41;
@@ -125,32 +145,15 @@ ISR(ADC_vect) {
     centerSensor = ADC;
     ADMUX = 0x40;
   }
-  //SREG = sregValue;
+  SREG = sregValue;
 
-  //section below relating to line sensor:
-  if (centerSensor >= 800) {
-    OCR0A = 0;
-    OCR0B = 220;                      // sends the left motor forward
-    OCR2A = 0;
-    OCR2B = 220;                      // sends the right motor forward
-  }
-  else if (rightSensor > 850)  {
-    OCR0A = 0;
-    OCR0B = 220;
-    OCR2B = 0;
-    OCR2A = 80;                      //left reverse signal half speed of right
-  } else if (leftSensor > 850) {
-    OCR0A = 80;                      // right reverse signal half speed of left
-    OCR0B = 0;
-    OCR2A = 0;
-    OCR2B = 220;
-  }
-  while (distance >= 4250) {
-    OCR0A = 0;
-    OCR0B = 0;
-    OCR2A = 0;
-    OCR2B = 0;
-  }
-  asm volatile("wdr");
   ADCSRA |= 0x40;                    // start a new conversion
+}
+void wdtreset() {                    // do a complete turn around for .5 s
+    OCR0A = 0;
+    OCR0B = 100;
+    OCR2A = 100;
+    OCR2B = 0;
+  _delay_ms(500);
+
 }
