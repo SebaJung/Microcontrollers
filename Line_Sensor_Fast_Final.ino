@@ -3,11 +3,11 @@
   Line sensors with ammendity LCD screen
   By: Carlos, Jon, Sebastian
   Written: March 22, 2024
-  Edited: May 7, 2024
+  Edited: May 10, 2024
   I/O Pins
   A0: Left Line Sensor
-  A1: Center Line Sensor
-  A2: Right Line Sensor
+  A1: Right Line Sensor
+  A2: Center Line Sensor
   A3: E PIN
   A4: RS PIN
   A5:
@@ -57,7 +57,7 @@ void setup() {
 
   lcd_init();                       // lcd startup routine
   sei();                            // sets the interrupt enable flag on SREG
-
+  Serial.begin(9600);
   PORTD |= 0x90;                    // enables the motor control
 }
 
@@ -75,37 +75,42 @@ void loop() {
   unsigned long distance = (avgCount * 105L) / 100;
 
   //section below relating to line sensor:
-  if (centerSensor >= 900) {
+  if ((centerSensor >= 760) && (rightSensor <= 700) && (leftSensor <= 700)) {
     OCR0A = 0;
-    OCR0B = 225;                      // sends the left motor forward
+    OCR0B = 200;                      // sends the left motor forward
     OCR2A = 0;
-    OCR2B = 225;                      // sends the right motor forward
-  } else if (rightSensor > (leftSensor - 0)) {
-    OCR0A = 0;
-    OCR0B = 200;
-    OCR2B = 80;
-    OCR2A = 0;                      //left reverse signal half speed of right
-  } else if ((leftSensor - 180) > rightSensor) {
-    OCR0A = 0;                      // right reverse signal half speed of left
-    OCR0B = 80;
-    OCR2A = 0;
-    OCR2B = 200;
+    OCR2B = 200;                      // sends the right motor forward
   }
- 
- if ((distance >= 1900 ) && (centerSensor < 900)) {     // set ammendity for three point turn
+  else if ((rightSensor > leftSensor))  {
+    OCR0A = 0;
+    OCR0B = 220;
+    OCR2B = 0;
+    OCR2A = 60;                      //left reverse signal half speed of right
+  } else if (leftSensor > rightSensor) {
+    OCR0A = 60;                      // right reverse signal half speed of left
+    OCR0B = 0;
+    OCR2A = 0;
+    OCR2B = 220;
+  }
+  if (distance >= 4300) {
     OCR0A = 0;
     OCR0B = 0;
     OCR2A = 0;
     OCR2B = 0;
   }
+  Serial.print(leftSensor);
+  Serial.print('\t');
+  Serial.print(centerSensor);
+  Serial.print('\t');
+  Serial.print(rightSensor);
+  Serial.println();
 
   lcd_puts("Odometer:");
   char charbufferDistance[10];
-  ltoa((distance/10), charbufferDistance, 10);
+  ltoa((distance / 10), charbufferDistance, 10);
   lcd_goto(0x0A);
   lcd_puts(charbufferDistance);
   lcd_puts(" cm");
-
   _delay_ms(50);
 }
 
@@ -128,15 +133,16 @@ ISR(ADC_vect) {
       will store the value of that ADC register
       onto that sensor's variable
   */
+
   sregValue = SREG;
   if (ADMUX == 0x40) {               // A0 left sensor
     leftSensor = ADC;
     ADMUX = 0x41;
-  } else if (ADMUX == 0x41) {        // A1 center sensor
-    centerSensor = ADC;
+  } else if (ADMUX == 0x41) {        // A1 right sensor
+    rightSensor = ADC + 110;
     ADMUX = 0x42;
-  } else if (ADMUX == 0x42) {        // A2 right sensor
-    rightSensor = ADC;
+  } else if (ADMUX == 0x42) {        // A2 center sensor
+    centerSensor = ADC;
     ADMUX = 0x40;
   }
   SREG = sregValue;
